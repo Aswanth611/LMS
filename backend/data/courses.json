@@ -1,0 +1,162 @@
+[
+  {
+    "_id": "c1",
+    "title": "Python Fundamentals for AI",
+    "description": "Learn Python programming language essentials tailored specifically for data manipulation, scripting, and basic AI computations.",
+    "category": "AI Engineer",
+    "difficulty": "Beginner",
+    "duration": 10,
+    "modules": [
+      {
+        "title": "Introduction to Python syntax",
+        "description": "Variables, data types.",
+        "duration": 30
+      },
+      {
+        "title": "Control Flow & Functions",
+        "description": "Loops and custom functions.",
+        "duration": 45
+      },
+      {
+        "title": "Data Structures in Python",
+        "description": "Lists, dicts, sets.",
+        "duration": 60
+      }
+    ]
+  },
+  {
+    "_id": "c2",
+    "title": "Machine Learning Essentials",
+    "description": "An end-to-end guide to modern machine learning. Dive deep into supervised and unsupervised learning.",
+    "category": "AI Engineer",
+    "difficulty": "Intermediate",
+    "duration": 20,
+    "modules": [
+      {
+        "title": "Introduction to ML & Supervised Learning",
+        "description": "Linear and logistic regression.",
+        "duration": 60
+      },
+      {
+        "title": "Unsupervised Learning Algorithms",
+        "description": "K-Means and PCA.",
+        "duration": 90
+      },
+      {
+        "title": "Model Evaluation",
+        "description": "Precision-recall, ROC-AUC.",
+        "duration": 60
+      }
+    ]
+  },
+  {
+    "_id": "c3",
+    "title": "Deep Learning & Neural Networks",
+    "description": "Unlock the power of neural networks. Master Feedforward networks, CNNs, RNNs, and Transformers.",
+    "category": "AI Engineer",
+    "difficulty": "Advanced",
+    "duration": 30,
+    "modules": [
+      {
+        "title": "Neural Network Mathematics",
+        "description": "Forward propagation and backprop.",
+        "duration": 90
+      },
+      {
+        "title": "Convolutional Networks (CNNs)",
+        "description": "Image classification.",
+        "duration": 120
+      },
+      {
+        "title": "Transformers and LLMs",
+        "description": "Attention mechanisms.",
+        "duration": 150
+      }
+    ]
+  },
+  {
+    "_id": "c4",
+    "title": "HTML, CSS & JavaScript Fundamentals",
+    "description": "The core building blocks of the web. Learn HTML5 for structure, CSS3 for styling and responsive designs, and JavaScript.",
+    "category": "Full Stack Developer",
+    "difficulty": "Beginner",
+    "duration": 12,
+    "modules": [
+      {
+        "title": "HTML5 Semantic Structure",
+        "description": "Layout tags, forms.",
+        "duration": 30
+      },
+      {
+        "title": "CSS3 layouts: Flexbox & Grid",
+        "description": "Responsive grid layouts.",
+        "duration": 60
+      },
+      {
+        "title": "Modern JavaScript (ES6+)",
+        "description": "Variables, promises.",
+        "duration": 90
+      }
+    ]
+  },
+  {
+    "_id": "c5",
+    "title": "React & Frontend Architecture",
+    "description": "Learn the leading frontend library for building component-based SPAs.",
+    "category": "Full Stack Developer",
+    "difficulty": "Intermediate",
+    "duration": 25,
+    "modules": [
+      {
+        "title": "Component Basics & Props",
+        "description": "Designing components.",
+        "duration": 45
+      },
+      {
+        "title": "State Management",
+        "description": "useState and useEffect hooks.",
+        "duration": 90
+      }
+    ]
+  },
+  {
+    "_id": "c6",
+    "title": "Introduction to Data Science with Python",
+    "description": "Get started with the field of data science. Learn Pandas and NumPy.",
+    "category": "Data Scientist",
+    "difficulty": "Beginner",
+    "duration": 10,
+    "modules": [
+      {
+        "title": "Introduction to Jupyter & Pandas",
+        "description": "DataFrame exploration.",
+        "duration": 45
+      },
+      {
+        "title": "Data Wrangling & Cleaning",
+        "description": "Handling missing values.",
+        "duration": 60
+      }
+    ]
+  },
+  {
+    "_id": "c7",
+    "title": "Introduction to Cyber Security & Networking",
+    "description": "Learn the core foundations of system protection, TCP/IP stack, and firewalls.",
+    "category": "Cyber Security Specialist",
+    "difficulty": "Beginner",
+    "duration": 12,
+    "modules": [
+      {
+        "title": "Understanding the OSI Model",
+        "description": "Analyzing packets.",
+        "duration": 45
+      },
+      {
+        "title": "Subnetting & Networking Protocols",
+        "description": "IP addresses, DNS.",
+        "duration": 60
+      }
+    ]
+  }
+]

@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>PWA Icon Resizer</title>
+</head>
+<body>
+  <h3>Generating PWA Icons...</h3>
+  <div id="status">Starting...</div>
+  <script>
+    const statusDiv = document.getElementById('status');
+    const updateStatus = (text) => {
+      statusDiv.innerHTML += '<br>' + text;
+      console.log(text);
+    };
+
+    const resizeAndSend = async () => {
+      try {
+        const img = new Image();
+        img.src = '/icon.png';
+        img.onload = async () => {
+          updateStatus('Loaded icon.png successfully.');
+          
+          const sizes = [192, 512];
+          for (const size of sizes) {
+            const canvas = document.createElement('canvas');
+            canvas.width = size;
+            canvas.height = size;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, size, size);
+            
+            const base64 = canvas.toDataURL('image/png');
+            updateStatus(`Resized to ${size}x${size}. Sending to backend...`);
+            
+            const res = await fetch('http://localhost:5000/api/save-icon', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json'
+              },
+              body: JSON.stringify({
+                filename: `icon-${size}.png`,
+                base64: base64
+              })
+            });
+            const data = await res.json();
+            if (data.success) {
+              updateStatus(`Saved icon-${size}.png successfully.`);
+            } else {
+              updateStatus(`Failed to save icon-${size}.png: ${data.message}`);
+            }
+          }
+          updateStatus('FINISHED ALL GENERATIONS');
+        };
+        img.onerror = (e) => {
+          updateStatus('Error loading icon.png');
+        };
+      } catch (err) {
+        updateStatus('Error: ' + err.message);
+      }
+    };
+
+    resizeAndSend();
+  </script>
+</body>
+</html>
