@@ -14,7 +14,11 @@ const Login = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      navigate('/dashboard');
+      if (user.role === 'admin') {
+        navigate('/admin');
+      } else {
+        navigate('/dashboard');
+      }
     }
     setError(null);
   }, [user, navigate, setError]);
@@ -27,7 +31,7 @@ const Login = () => {
     const success = await login(email, password);
     setLoading(false);
     if (success) {
-      navigate('/dashboard');
+      // Navigation is handled by the useEffect watching the 'user' state
     }
   };
 

@@ -61,9 +61,7 @@ const Dashboard = () => {
 
   useEffect(() => {
     if (user) {
-      if (user.role === 'admin') {
-        navigate('/admin');
-      } else if (!user.selectedTrack) {
+      if (!user.selectedTrack) {
         navigate('/tracks');
       } else {
         fetchDashboardData();
