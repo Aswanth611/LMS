@@ -5,6 +5,8 @@ const User = require('../models/User');
 const Course = require('../models/Course');
 const Progress = require('../models/Progress');
 const LearningPath = require('../models/LearningPath');
+const Project = require('../models/Project');
+const Certificate = require('../models/Certificate');
 
 const DATA_DIR = path.join(__dirname, '../../data');
 
@@ -163,6 +165,17 @@ const checkAndSeedLocalJSON = () => {
         selectedTrack: "AI Engineer",
         skillLevel: "Beginner",
         interests: ["Python", "Machine Learning"],
+        createdAt: new Date().toISOString()
+      },
+      {
+        _id: "u_mentor",
+        name: "Mentor User",
+        email: "mentor@eduflick.ai",
+        password: bcrypt.hashSync('mentorpassword', salt),
+        role: "mentor",
+        selectedTrack: "AI Engineer",
+        skillLevel: "",
+        interests: [],
         createdAt: new Date().toISOString()
       }
     ]);
@@ -482,10 +495,17 @@ module.exports = {
       pathObj = {
         _id: 'lp_' + Math.random().toString(36).substr(2, 9),
         userId,
+        currentPhase: 1,
+        completedPhases: [],
+        unlockedPhases: [1],
         createdAt: new Date().toISOString()
       };
       paths.push(pathObj);
     }
+    if (pathObj.currentPhase === undefined) pathObj.currentPhase = 1;
+    if (pathObj.completedPhases === undefined) pathObj.completedPhases = [];
+    if (pathObj.unlockedPhases === undefined) pathObj.unlockedPhases = [1];
+
     pathObj.recommendedCourses = recommendedCourses;
     pathObj.roadmapStages = roadmapStages;
     writeJSON('learningpaths', paths);
@@ -500,5 +520,157 @@ module.exports = {
         courses: (stage.courses || []).map(id => courses.find(c => c._id === id)).filter(Boolean)
       }))
     };
+  },
+
+  // ==========================================
+  // PROJECT OPERATIONS
+  // ==========================================
+  async createProject(data) {
+    if (isMongoConnected()) {
+      return await Project.create(data);
+    }
+    const projects = readJSON('projects');
+    const newProject = {
+      _id: 'proj_' + Math.random().toString(36).substr(2, 9),
+      ...data,
+      status: data.status || 'Pending Mentor Review',
+      mentorFeedback: data.mentorFeedback || '',
+      submittedDate: new Date().toISOString()
+    };
+    projects.push(newProject);
+    writeJSON('projects', projects);
+    return newProject;
+  },
+
+  async findProjects(filter = {}) {
+    if (isMongoConnected()) {
+      return await Project.find(filter).populate('studentId').populate('courseId');
+    }
+    let projects = readJSON('projects');
+    if (filter.studentId) projects = projects.filter(p => p.studentId === filter.studentId.toString());
+    if (filter.courseId) projects = projects.filter(p => p.courseId === filter.courseId.toString());
+    if (filter.status) projects = projects.filter(p => p.status === filter.status);
+
+    const users = readJSON('users');
+    const courses = readJSON('courses');
+    return projects.map(p => {
+      const student = users.find(u => u._id === p.studentId);
+      const course = courses.find(c => c._id === p.courseId);
+      return {
+        ...p,
+        studentId: student || { _id: p.studentId, name: "Unknown" },
+        courseId: course || { _id: p.courseId, title: "Unknown" }
+      };
+    });
+  },
+
+  async findProjectById(id) {
+    if (isMongoConnected()) {
+      return await Project.findById(id).populate('studentId').populate('courseId');
+    }
+    const projects = readJSON('projects');
+    const project = projects.find(p => p._id === id);
+    if (!project) return null;
+    const users = readJSON('users');
+    const courses = readJSON('courses');
+    const student = users.find(u => u._id === project.studentId);
+    const course = courses.find(c => c._id === project.courseId);
+    return {
+      ...project,
+      studentId: student || { _id: project.studentId, name: "Unknown" },
+      courseId: course || { _id: project.courseId, title: "Unknown" }
+    };
+  },
+
+  async updateProject(id, updates) {
+    if (isMongoConnected()) {
+      return await Project.findByIdAndUpdate(id, updates, { new: true }).populate('studentId').populate('courseId');
+    }
+    const projects = readJSON('projects');
+    const idx = projects.findIndex(p => p._id === id);
+    if (idx === -1) return null;
+    projects[idx] = { ...projects[idx], ...updates };
+    writeJSON('projects', projects);
+    return this.findProjectById(id);
+  },
+
+  // ==========================================
+  // CERTIFICATE OPERATIONS
+  // ==========================================
+  async createCertificate(data) {
+    if (isMongoConnected()) {
+      return await Certificate.create(data);
+    }
+    const certificates = readJSON('certificates');
+    const newCert = {
+      _id: 'cert_' + Math.random().toString(36).substr(2, 9),
+      ...data,
+      issueDate: new Date().toISOString()
+    };
+    certificates.push(newCert);
+    writeJSON('certificates', certificates);
+    return newCert;
+  },
+
+  async findCertificates(filter = {}) {
+    if (isMongoConnected()) {
+      return await Certificate.find(filter).populate('studentId').populate('courseId');
+    }
+    let certs = readJSON('certificates');
+    if (filter.studentId) certs = certs.filter(c => c.studentId === filter.studentId.toString());
+    if (filter.courseId) certs = certs.filter(c => c.courseId === filter.courseId.toString());
+    if (filter.certificateId) certs = certs.filter(c => c.certificateId === filter.certificateId);
+
+    const users = readJSON('users');
+    const courses = readJSON('courses');
+    return certs.map(c => {
+      const student = users.find(u => u._id === c.studentId);
+      const course = courses.find(co => co._id === c.courseId);
+      return {
+        ...c,
+        studentId: student || { _id: c.studentId, name: "Unknown" },
+        courseId: course || { _id: c.courseId, title: "Unknown" }
+      };
+    });
+  },
+
+  async findCertificateById(id) {
+    if (isMongoConnected()) {
+      return await Certificate.findById(id).populate('studentId').populate('courseId');
+    }
+    const certs = readJSON('certificates');
+    const cert = certs.find(c => c._id === id);
+    if (!cert) return null;
+    const users = readJSON('users');
+    const courses = readJSON('courses');
+    const student = users.find(u => u._id === cert.studentId);
+    const course = courses.find(co => co._id === cert.courseId);
+    return {
+      ...cert,
+      studentId: student || { _id: cert.studentId, name: "Unknown" },
+      courseId: course || { _id: cert.courseId, title: "Unknown" }
+    };
+  },
+
+  async updateLearningPathProgression(userId, currentPhase, completedPhases, unlockedPhases) {
+    if (isMongoConnected()) {
+      let pathObj = await LearningPath.findOne({ userId });
+      if (pathObj) {
+        pathObj.currentPhase = currentPhase;
+        pathObj.completedPhases = completedPhases;
+        pathObj.unlockedPhases = unlockedPhases;
+        await pathObj.save();
+      }
+      return pathObj;
+    }
+    const paths = readJSON('learningpaths');
+    let pathObj = paths.find(p => p.userId === userId.toString());
+    if (pathObj) {
+      pathObj.currentPhase = currentPhase;
+      pathObj.completedPhases = completedPhases;
+      pathObj.unlockedPhases = unlockedPhases;
+      writeJSON('learningpaths', paths);
+    }
+    return pathObj;
   }
 };

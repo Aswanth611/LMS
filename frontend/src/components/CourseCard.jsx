@@ -1,11 +1,13 @@
 import React from 'react';
-import { BookOpen, Clock, Play, CheckCircle } from 'lucide-react';
+import { BookOpen, Clock, Play, Award } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 
 const CourseCard = ({ course, progress, onEnroll, onSelect }) => {
-  // Check if course is enrolled
+  const navigate = useNavigate();
   const isEnrolled = !!progress;
   const percentage = progress ? progress.completionPercentage : 0;
   const status = progress ? progress.status : null;
+  const isCompleted = progress && (progress.status === 'Completed' || progress.quizPassed);
 
   const getDifficultyColor = (diff) => {
     switch (diff) {
@@ -47,14 +49,14 @@ const CourseCard = ({ course, progress, onEnroll, onSelect }) => {
           <div className="mb-5">
             <div className="flex justify-between items-center text-[10px] font-bold text-slate-400 mb-1.5">
               <span>COURSE PROGRESS</span>
-              <span className={status === 'Completed' ? 'text-emerald-400' : 'text-brand-400'}>
+              <span className={isCompleted ? 'text-emerald-400' : 'text-brand-400'}>
                 {percentage}%
               </span>
             </div>
             <div className="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden">
               <div 
                 className={`h-full rounded-full transition-all duration-500 ${
-                  status === 'Completed' ? 'bg-emerald-500' : 'bg-brand-500'
+                  isCompleted ? 'bg-emerald-500' : 'bg-brand-500'
                 }`}
                 style={{ width: `${percentage}%` }}
               ></div>
@@ -69,34 +71,29 @@ const CourseCard = ({ course, progress, onEnroll, onSelect }) => {
             <span className="font-semibold">{course.duration} Hours</span>
           </div>
 
-          {isEnrolled ? (
+          {isCompleted ? (
+            <button
+              onClick={() => navigate('/project-submission')}
+              className="flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all cursor-pointer"
+            >
+              <Award className="w-4 h-4" />
+              View Certificate
+            </button>
+          ) : isEnrolled ? (
             <button
               onClick={() => onSelect(course._id || course.id)}
-              className={`flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl border transition-all duration-200 ${
-                status === 'Completed'
-                  ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 hover:bg-emerald-500/20'
-                  : 'bg-brand-500/10 text-brand-300 border-brand-500/20 hover:bg-brand-500/20'
-              }`}
+              className="flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl border border-brand-500/20 bg-brand-500/10 text-brand-300 hover:bg-brand-500/20 transition-all cursor-pointer"
             >
-              {status === 'Completed' ? (
-                <>
-                  <CheckCircle className="w-4 h-4" />
-                  Review Modules
-                </>
-              ) : (
-                <>
-                  <Play className="w-3.5 h-3.5 fill-current" />
-                  Resume Course
-                </>
-              )}
+              <Play className="w-3.5 h-3.5 fill-current" />
+              Continue Learning
             </button>
           ) : (
             <button
               onClick={() => onEnroll(course._id || course.id)}
-              className="flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-500/10 hover:shadow-brand-500/20 transition-all duration-200"
+              className="flex items-center gap-1.5 text-xs font-bold py-2 px-4 rounded-xl bg-brand-600 hover:bg-brand-500 text-white shadow-md shadow-brand-500/10 hover:shadow-brand-500/20 transition-all duration-200 cursor-pointer"
             >
               <BookOpen className="w-4 h-4" />
-              Enroll Now
+              Start Course
             </button>
           )}
         </div>

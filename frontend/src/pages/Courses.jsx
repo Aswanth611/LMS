@@ -133,7 +133,13 @@ const Courses = () => {
 
     let completedList = [...activeProgress.completedModules];
     if (completedList.includes(moduleTitle)) {
-      completedList = completedList.filter(title => title !== moduleTitle);
+      // Unchecking: remove this module and all subsequent ones
+      const modules = selectedCourse.modules;
+      const modIdx = modules.findIndex(m => m.title === moduleTitle);
+      if (modIdx !== -1) {
+        const titlesToKeep = modules.slice(0, modIdx).map(m => m.title);
+        completedList = completedList.filter(title => titlesToKeep.includes(title));
+      }
     } else {
       completedList.push(moduleTitle);
     }

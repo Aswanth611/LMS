@@ -20,6 +20,12 @@ const Landing = () => {
 
         <div className="flex items-center gap-4">
           <Link 
+            to="/mentor-login" 
+            className="text-sm font-semibold text-slate-300 hover:text-white transition-colors mr-2"
+          >
+            Mentor Portal
+          </Link>
+          <Link 
             to="/login" 
             className="text-sm font-semibold text-slate-300 hover:text-white transition-colors"
           >

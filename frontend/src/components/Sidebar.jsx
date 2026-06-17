@@ -15,13 +15,26 @@ import {
 const Sidebar = () => {
   const { user, logout, sidebarOpen, setSidebarOpen } = useContext(AuthContext);
 
-  const links = [
-    { name: 'Dashboard', path: '/dashboard', icon: LayoutDashboard },
-    { name: 'Tracks Selector', path: '/tracks', icon: Compass },
-    { name: 'My Learning Path', path: '/learning-path', icon: Map },
-    { name: 'Explore Courses', path: '/courses', icon: BookOpen },
-    { name: 'Analytics & Stats', path: '/progress', icon: BarChart3 },
-  ];
+  let links = [];
+  if (user?.role === 'mentor') {
+    links = [
+      { name: 'Dashboard', path: '/mentor-dashboard', icon: LayoutDashboard },
+      { name: 'Project Reviews', path: '/mentor-reviews', icon: ShieldAlert },
+      { name: 'Approved Projects', path: '/mentor-approved', icon: BookOpen }
+    ];
+  } else if (user?.role === 'admin') {
+    links = [
+      { name: 'Admin Dashboard', path: '/admin', icon: ShieldAlert }
+    ];
+  } else {
+    // default to student
+    links = [
+      { name: 'Learning Progress', path: '/learning-path', icon: Map },
+      { name: 'Course Catalog', path: '/catalog', icon: BookOpen },
+      { name: 'Project Submission', path: '/project-submission', icon: Compass },
+      { name: 'About Project', path: '/about', icon: BarChart3 }
+    ];
+  }
 
   return (
     <>
@@ -73,29 +86,6 @@ const Sidebar = () => {
               </NavLink>
             );
           })}
-
-          {/* Admin Link if role is admin */}
-          {user?.role === 'admin' && (
-            <div className="pt-4 border-t border-slate-800/50 mt-4">
-              <span className="px-4 text-[10px] uppercase font-bold text-slate-500 tracking-wider">
-                Management
-              </span>
-              <NavLink
-                to="/admin"
-                onClick={() => setSidebarOpen(false)}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-4 py-3 rounded-xl text-sm font-semibold transition-all duration-200 mt-1 ${
-                    isActive
-                      ? 'bg-gradient-to-r from-accent-purple to-pink-500 text-white shadow-md font-bold'
-                      : 'text-slate-400 hover:text-slate-100 hover:bg-slate-800/50'
-                  }`
-                }
-              >
-                <ShieldAlert className="w-5 h-5" />
-                Admin Portal
-              </NavLink>
-            </div>
-          )}
         </nav>
 
         {/* User Info Foot */}

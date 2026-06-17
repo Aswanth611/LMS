@@ -4,18 +4,21 @@ import { AuthProvider, AuthContext } from './context/AuthContext';
 import Landing from './pages/Landing';
 import Login from './pages/Login';
 import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Tracks from './pages/Tracks';
-import Courses from './pages/Courses';
 import LearningPath from './pages/LearningPath';
-import ProgressDashboard from './pages/ProgressDashboard';
+import Courses from './pages/Courses';
+import ProjectSubmission from './pages/ProjectSubmission';
+import AboutProject from './pages/AboutProject';
+import MentorLogin from './pages/MentorLogin';
+import MentorDashboard from './pages/MentorDashboard';
+import MentorReviews from './pages/MentorReviews';
+import MentorApproved from './pages/MentorApproved';
 import AdminDashboard from './pages/AdminDashboard';
 import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
 
 // Private Route Wrapper
 const PrivateRoute = ({ children }) => {
-  const { user, loading, sidebarOpen, setSidebarOpen } = useContext(AuthContext);
+  const { user, loading } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -25,7 +28,6 @@ const PrivateRoute = ({ children }) => {
     );
   }
 
-  // Redirect to login if not authenticated
   if (!user) {
     return <Navigate to="/login" />;
   }
@@ -41,6 +43,15 @@ const PrivateRoute = ({ children }) => {
   );
 };
 
+// Role-based Dashboard Redirect
+const DashboardRedirect = () => {
+  const { user } = useContext(AuthContext);
+  if (!user) return <Navigate to="/login" />;
+  if (user.role === 'mentor') return <Navigate to="/mentor-dashboard" />;
+  if (user.role === 'admin') return <Navigate to="/admin" />;
+  return <Navigate to="/learning-path" />;
+};
+
 function App() {
   return (
     <AuthProvider>
@@ -50,13 +61,21 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/mentor-login" element={<MentorLogin />} />
+
+          {/* Role Dashboard Redirector */}
+          <Route path="/dashboard" element={<PrivateRoute><DashboardRedirect /></PrivateRoute>} />
 
           {/* Protected Student Routes */}
-          <Route path="/dashboard" element={<PrivateRoute><Dashboard /></PrivateRoute>} />
-          <Route path="/tracks" element={<PrivateRoute><Tracks /></PrivateRoute>} />
-          <Route path="/courses" element={<PrivateRoute><Courses /></PrivateRoute>} />
           <Route path="/learning-path" element={<PrivateRoute><LearningPath /></PrivateRoute>} />
-          <Route path="/progress" element={<PrivateRoute><ProgressDashboard /></PrivateRoute>} />
+          <Route path="/catalog" element={<PrivateRoute><Courses /></PrivateRoute>} />
+          <Route path="/project-submission" element={<PrivateRoute><ProjectSubmission /></PrivateRoute>} />
+          <Route path="/about" element={<PrivateRoute><AboutProject /></PrivateRoute>} />
+
+          {/* Protected Mentor Routes */}
+          <Route path="/mentor-dashboard" element={<PrivateRoute><MentorDashboard /></PrivateRoute>} />
+          <Route path="/mentor-reviews" element={<PrivateRoute><MentorReviews /></PrivateRoute>} />
+          <Route path="/mentor-approved" element={<PrivateRoute><MentorApproved /></PrivateRoute>} />
 
           {/* Protected Admin Routes */}
           <Route path="/admin" element={<PrivateRoute><AdminDashboard /></PrivateRoute>} />

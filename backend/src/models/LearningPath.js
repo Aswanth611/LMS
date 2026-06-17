@@ -38,6 +38,19 @@ const LearningPathSchema = new mongoose.Schema({
     type: [RoadmapStageSchema],
     default: []
   },
+  currentPhase: {
+    type: Number,
+    default: 1
+  },
+  completedPhases: [{
+    phaseId: Number,
+    quizScore: Number,
+    completed: Boolean
+  }],
+  unlockedPhases: {
+    type: [Number],
+    default: [1]
+  },
   createdAt: {
     type: Date,
     default: Date.now

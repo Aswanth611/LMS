@@ -122,3 +122,58 @@ exports.login = async (req, res) => {
     });
   }
 };
+
+// @desc    Authenticate mentor & get token
+// @route   POST /api/auth/mentor-login
+// @access  Public
+exports.mentorLogin = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide both an email and password'
+      });
+    }
+
+    const user = await dbService.findUserByEmail(email);
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    if (user.role !== 'mentor') {
+      return res.status(403).json({
+        success: false,
+        message: 'Access denied. This login is only for mentors.'
+      });
+    }
+
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Invalid credentials'
+      });
+    }
+
+    res.json({
+      success: true,
+      token: generateToken(user._id || user.id),
+      user: {
+        id: user._id || user.id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    });
+  }
+};

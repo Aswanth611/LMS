@@ -105,6 +105,29 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // Mentor Login
+  const mentorLogin = async (email, password) => {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await axios.post('/auth/mentor-login', { email, password });
+      if (res.data.success) {
+        setAuthToken(res.data.token);
+        setUser(res.data.user);
+        setLoading(false);
+        return true;
+      }
+    } catch (err) {
+      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Could not connect to the backend server. Please make sure the backend is running!');
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password');
+      }
+      setLoading(false);
+      return false;
+    }
+  };
+
   // Logout User
   const logout = () => {
     setAuthToken(null);
@@ -138,6 +161,7 @@ export const AuthProvider = ({ children }) => {
         error,
         register,
         login,
+        mentorLogin,
         logout,
         updateProfile,
         setError,

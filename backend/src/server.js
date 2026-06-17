@@ -41,6 +41,12 @@ const connectDB = async () => {
         skillLevel: "Beginner",
         interests: ["Python", "Machine Learning", "Neural Networks"]
       });
+      await User.create({
+        name: "Mentor User",
+        email: "mentor@eduflick.ai",
+        password: "mentorpassword",
+        role: "mentor"
+      });
       console.log('Successfully seeded default users to MongoDB.');
     }
   } catch (error) {
@@ -72,6 +78,9 @@ app.use('/api/users', require('./routes/userRoutes'));
 app.use('/api/courses', require('./routes/courseRoutes'));
 app.use('/api/progress', require('./routes/progressRoutes'));
 app.use('/api/ai', require('./routes/aiRoutes'));
+app.use('/api/quiz', require('./routes/quizRoutes'));
+app.use('/api/projects', require('./routes/projectRoutes'));
+app.use('/api/certificates', require('./routes/certificateRoutes'));
 
 // Health check endpoint
 app.get('/api/health', (req, res) => {
