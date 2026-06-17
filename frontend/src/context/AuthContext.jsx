@@ -3,7 +3,7 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
-const API_URL = 'http://localhost:5000/api';
+const API_URL = 'https://ai-lms-backend-74qm.onrender.com/api';
 
 // Set up default axios base url
 axios.defaults.baseURL = API_URL;

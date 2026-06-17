@@ -68,12 +68,14 @@ const ProgressDashboard = () => {
     ? Math.round(progressData.reduce((acc, p) => acc + p.completionPercentage, 0) / totalEnrolled)
     : 0;
 
-  // Chart Data preparation
-  const chartData = progressData.map(p => ({
-    name: p.courseId.title.length > 25 ? p.courseId.title.slice(0, 22) + '...' : p.courseId.title,
-    percentage: p.completionPercentage,
-    fullName: p.courseId.title
-  }));
+  const chartData = progressData.map(p => {
+    const title = p.courseId ? p.courseId.title : 'Unknown Course';
+    return {
+      name: title.length > 25 ? title.slice(0, 22) + '...' : title,
+      percentage: p.completionPercentage,
+      fullName: title
+    };
+  });
 
   // Recharts color matching
   const COLORS = ['#6366f1', '#8b5cf6', '#14b8a6', '#ec4899', '#f97316'];

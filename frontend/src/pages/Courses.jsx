@@ -46,9 +46,10 @@ const Courses = () => {
         // Map progress list to an object keyed by courseId
         const progMap = {};
         progressRes.data.progress.forEach(p => {
-          // p.courseId might be populated, extract the ID
-          const courseId = p.courseId._id || p.courseId.id || p.courseId;
-          progMap[courseId.toString()] = p;
+          if (p.courseId) {
+            const courseId = p.courseId._id || p.courseId.id || p.courseId;
+            progMap[courseId.toString()] = p;
+          }
         });
         setProgressMap(progMap);
 
@@ -193,12 +194,13 @@ const Courses = () => {
           {!loading && (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredCourses.map((course) => {
+                if (!course) return null;
                 const cId = course._id || course.id;
                 return (
                   <CourseCard
                     key={cId}
                     course={course}
-                    progress={progressMap[cId.toString()]}
+                    progress={cId ? progressMap[cId.toString()] : null}
                     onEnroll={handleEnroll}
                     onSelect={handleSelectCourse}
                   />

@@ -65,9 +65,15 @@ exports.generateLearningPath = async (req, res) => {
     const roadmapStages = aiResponse.roadmapStages || [];
 
     // Validate recommended course references
-    const validatedStages = roadmapStages.map(stage => {
+    const validatedStages = (roadmapStages || []).map(stage => {
       const mappedCourses = stage.courses ? stage.courses.map(courseRef => {
-        const found = courses.find(c => (c._id || c.id).toString() === courseRef || c.title.toLowerCase() === courseRef.toString().toLowerCase());
+        if (!courseRef) return null;
+        const refStr = courseRef.toString().toLowerCase();
+        const found = courses.find(c => {
+          const cId = (c._id || c.id || '').toString().toLowerCase();
+          const cTitle = (c.title || '').toLowerCase();
+          return cId === refStr || cTitle === refStr;
+        });
         return found ? (found._id || found.id) : null;
       }).filter(id => id !== null) : [];
 
@@ -80,8 +86,14 @@ exports.generateLearningPath = async (req, res) => {
       };
     });
 
-    const validatedRecommendedIds = recommendedCourseIds.map(ref => {
-      const found = courses.find(c => (c._id || c.id).toString() === ref || c.title.toLowerCase() === ref.toString().toLowerCase());
+    const validatedRecommendedIds = (recommendedCourseIds || []).map(ref => {
+      if (!ref) return null;
+      const refStr = ref.toString().toLowerCase();
+      const found = courses.find(c => {
+        const cId = (c._id || c.id || '').toString().toLowerCase();
+        const cTitle = (c.title || '').toLowerCase();
+        return cId === refStr || cTitle === refStr;
+      });
       return found ? (found._id || found.id) : null;
     }).filter(id => id !== null);
 
@@ -116,8 +128,11 @@ exports.recommendCourses = async (req, res) => {
     // Fetch completed courses
     const progressList = await dbService.findProgressByUser(userId);
     const completedCourseIds = progressList
-      .filter(p => p.status === 'Completed')
-      .map(p => (p.courseId._id || p.courseId.id || p.courseId).toString());
+      .filter(p => p.status === 'Completed' && p.courseId)
+      .map(p => {
+        const cId = p.courseId._id || p.courseId.id || p.courseId;
+        return cId ? cId.toString() : '';
+      }).filter(Boolean);
 
     const aiPayload = {
       track: user.selectedTrack,
@@ -144,8 +159,8 @@ exports.recommendCourses = async (req, res) => {
     }
 
     // Map title/ID strings to DB objects
-    const recIds = aiResponse.recommendedCourseIds || [];
-    const recommendedCourses = courses.filter(c => recIds.includes((c._id || c.id).toString()));
+    const recIds = (aiResponse.recommendedCourseIds || []).map(id => id ? id.toString() : '');
+    const recommendedCourses = courses.filter(c => recIds.includes((c._id || c.id || '').toString()));
 
     res.json({
       success: true,
@@ -170,8 +185,8 @@ exports.analyzeProgress = async (req, res) => {
     const progressList = await dbService.findProgressByUser(userId);
 
     const progressData = progressList.map(p => ({
-      courseTitle: p.courseId.title,
-      category: p.courseId.category,
+      courseTitle: p.courseId ? p.courseId.title : 'Unknown Course',
+      category: p.courseId ? p.courseId.category : '',
       completionPercentage: p.completionPercentage,
       status: p.status
     }));
@@ -207,6 +222,7 @@ exports.analyzeProgress = async (req, res) => {
 // @desc    Ask the AI Assistant chatbot
 // @route   POST /api/ai/chat
 // @access  Private
+// exports.askAssistant = async (req, res) => {
 exports.askAssistant = async (req, res) => {
   try {
     const { message, chatHistory } = req.body;
@@ -218,7 +234,10 @@ exports.askAssistant = async (req, res) => {
       return res.status(400).json({ success: false, message: 'Message is required' });
     }
 
-    const progressSummary = progressList.map(p => `${p.courseId.title} (${p.completionPercentage}% completed - ${p.status})`).join(', ');
+    const progressSummary = progressList.map(p => {
+      const title = p.courseId ? p.courseId.title : 'Unknown Course';
+      return `${title} (${p.completionPercentage}% completed - ${p.status})`;
+    }).join(', ');
 
     const aiPayload = {
       message,

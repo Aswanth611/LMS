@@ -99,6 +99,7 @@ const Dashboard = () => {
   const upcomingTasks = [];
   activeCourses.forEach(prog => {
     const course = prog.courseId;
+    if (!course || !course.modules) return;
     const completedTitles = prog.completedModules || [];
     const uncompletedModules = course.modules.filter(m => !completedTitles.includes(m.title));
     

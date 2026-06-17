@@ -51,5 +51,33 @@
       "Machine Learning"
     ],
     "createdAt": "2026-06-17T06:37:40.306Z"
+  },
+  {
+    "_id": "u_38n5n0gjp",
+    "name": "Test Student",
+    "email": "student_775@test.com",
+    "password": "$2a$10$C9y6H1qZwV4t9ZWZOfmmxeL2OBKHVVlj8GCBUDRYEVEjpVc8Vw0Ym",
+    "role": "student",
+    "selectedTrack": "AI Engineer",
+    "skillLevel": "Beginner",
+    "interests": [
+      "Python",
+      "Machine Learning"
+    ],
+    "createdAt": "2026-06-17T08:03:42.181Z"
+  },
+  {
+    "_id": "u_7cdajg95j",
+    "name": "Test Student",
+    "email": "student_4184@test.com",
+    "password": "$2a$10$x068cHm3qVu.Bv/5SupSk.VgyJuaR8LkVteeEfXADu7OFmxIuwasy",
+    "role": "student",
+    "selectedTrack": "AI Engineer",
+    "skillLevel": "Beginner",
+    "interests": [
+      "Python",
+      "Machine Learning"
+    ],
+    "createdAt": "2026-06-17T08:15:10.359Z"
   }
 ]

@@ -98,7 +98,7 @@ const LearningPath = () => {
         {!loading && !error && roadmap && (
           <div className="relative border-l-2 border-slate-800 ml-4 pl-8 space-y-12">
             {roadmap.roadmapStages.map((stage, idx) => {
-              const hasCourse = stage.courses && stage.courses.length > 0;
+              const hasCourse = stage.courses && stage.courses.length > 0 && stage.courses[0];
               const linkedCourse = hasCourse ? stage.courses[0] : null;
 
               return (
