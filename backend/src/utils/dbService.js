@@ -403,6 +403,43 @@ module.exports = {
         progress.status = 'Not Started';
       }
 
+      if (progress.quizPassed) {
+        try {
+          const LearningPath = require('../models/LearningPath');
+          const learningPath = await LearningPath.findOne({ userId });
+          if (learningPath) {
+            const stageIdx = learningPath.roadmapStages.findIndex(s => 
+              s.courses && s.courses.length > 0 && s.courses[0].toString() === courseId.toString()
+            );
+            if (stageIdx !== -1) {
+              const phaseId = stageIdx + 1;
+              const nextPhase = phaseId + 1;
+              
+              let unlockedPhases = learningPath.unlockedPhases || [1];
+              if (!unlockedPhases.includes(nextPhase)) {
+                unlockedPhases.push(nextPhase);
+              }
+
+              let completedPhases = learningPath.completedPhases || [];
+              const existingIdx = completedPhases.findIndex(cp => cp.phaseId === phaseId);
+              const phaseInfo = { phaseId: phaseId, quizScore: progress.quizScore, completed: true };
+              if (existingIdx !== -1) {
+                completedPhases[existingIdx] = phaseInfo;
+              } else {
+                completedPhases.push(phaseInfo);
+              }
+
+              learningPath.currentPhase = Math.max(learningPath.currentPhase || 1, nextPhase);
+              learningPath.completedPhases = completedPhases;
+              learningPath.unlockedPhases = unlockedPhases;
+              await learningPath.save();
+            }
+          }
+        } catch (err) {
+          console.error('Failed to auto-unlock next phase in MongoDB mode:', err);
+        }
+      }
+
       progress.lastAccessed = new Date();
       await progress.save();
       return await Progress.findById(progress._id).populate('courseId');
@@ -452,6 +489,44 @@ module.exports = {
       progress.status = 'Not Started';
     }
 
+    if (progress.quizPassed) {
+      try {
+        const learningPath = await module.exports.findLearningPathByUser(userId.toString());
+        if (learningPath) {
+          const stageIdx = learningPath.roadmapStages.findIndex(s => 
+            s.courses && s.courses.length > 0 && (s.courses[0]._id || s.courses[0].id || s.courses[0]).toString() === courseId.toString()
+          );
+          if (stageIdx !== -1) {
+            const phaseId = stageIdx + 1;
+            const nextPhase = phaseId + 1;
+
+            let unlockedPhases = learningPath.unlockedPhases || [1];
+            if (!unlockedPhases.includes(nextPhase)) {
+              unlockedPhases.push(nextPhase);
+            }
+
+            let completedPhases = learningPath.completedPhases || [];
+            const existingIdx = completedPhases.findIndex(cp => cp.phaseId === phaseId);
+            const phaseInfo = { phaseId: phaseId, quizScore: progress.quizScore, completed: true };
+            if (existingIdx !== -1) {
+              completedPhases[existingIdx] = phaseInfo;
+            } else {
+              completedPhases.push(phaseInfo);
+            }
+
+            await module.exports.updateLearningPathProgression(
+              userId.toString(),
+              Math.max(learningPath.currentPhase || 1, nextPhase),
+              completedPhases,
+              unlockedPhases
+            );
+          }
+        }
+      } catch (err) {
+        console.error('Failed to auto-unlock next phase in JSON fallback mode:', err);
+      }
+    }
+
     progress.lastAccessed = new Date().toISOString();
     
     writeJSON('progress', progressList);
@@ -474,6 +549,10 @@ module.exports = {
     const paths = readJSON('learningpaths');
     const pathObj = paths.find(p => p.userId === userId);
     if (!pathObj) return null;
+
+    if (pathObj.currentPhase === undefined) pathObj.currentPhase = 1;
+    if (pathObj.completedPhases === undefined) pathObj.completedPhases = [];
+    if (pathObj.unlockedPhases === undefined) pathObj.unlockedPhases = [1];
 
     // Populate recommendedCourses and stages.courses
     const courses = readJSON('courses');
