@@ -20,8 +20,6 @@ const ProjectSubmission = () => {
   const [description, setDescription] = useState('');
   const [technologies, setTechnologies] = useState('');
   const [githubLink, setGithubLink] = useState('');
-  const [docFile, setDocFile] = useState(null);
-  const [projFile, setProjFile] = useState(null);
 
   const studentId = user?.id || user?._id;
 
@@ -62,17 +60,7 @@ const ProjectSubmission = () => {
     }
   }, [studentId]);
 
-  const handleDocFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      setDocFile(e.target.files[0]);
-    }
-  };
 
-  const handleProjFileChange = (e) => {
-    if (e.target.files.length > 0) {
-      setProjFile(e.target.files[0]);
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -86,17 +74,13 @@ const ProjectSubmission = () => {
     setErrorMessage(null);
 
     try {
-      const uploadedFiles = [];
-      if (docFile) uploadedFiles.push(`doc_${docFile.name}`);
-      if (projFile) uploadedFiles.push(`src_${projFile.name}`);
-
       const res = await axios.post('/projects/submit', {
         courseId: selectedCourseId,
         title,
         description,
         technologies,
         githubLink,
-        uploadedFiles
+        uploadedFiles: []
       });
 
       if (res.data.success) {
@@ -106,11 +90,6 @@ const ProjectSubmission = () => {
         setDescription('');
         setTechnologies('');
         setGithubLink('');
-        setDocFile(null);
-        setProjFile(null);
-        // Reset file inputs manually
-        document.getElementById('doc-upload').value = '';
-        document.getElementById('proj-upload').value = '';
         await fetchData();
       }
     } catch (err) {
@@ -245,51 +224,7 @@ const ProjectSubmission = () => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Project Documentation *
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="doc-upload"
-                      type="file"
-                      required
-                      onChange={handleDocFileChange}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="doc-upload"
-                      className="flex items-center gap-1.5 justify-center border border-dashed border-slate-800 hover:border-slate-700 bg-slate-950/20 py-2.5 px-4 rounded-xl cursor-pointer text-[10px] font-bold text-slate-400 hover:text-white transition-all"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      {docFile ? docFile.name.slice(0, 15) + '...' : 'Upload Doc'}
-                    </label>
-                  </div>
-                </div>
 
-                <div>
-                  <label className="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
-                    Source Code / Zip *
-                  </label>
-                  <div className="relative">
-                    <input
-                      id="proj-upload"
-                      type="file"
-                      required
-                      onChange={handleProjFileChange}
-                      className="hidden"
-                    />
-                    <label
-                      htmlFor="proj-upload"
-                      className="flex items-center gap-1.5 justify-center border border-dashed border-slate-800 hover:border-slate-700 bg-slate-950/20 py-2.5 px-4 rounded-xl cursor-pointer text-[10px] font-bold text-slate-400 hover:text-white transition-all"
-                    >
-                      <Upload className="w-3.5 h-3.5" />
-                      {projFile ? projFile.name.slice(0, 15) + '...' : 'Upload Code'}
-                    </label>
-                  </div>
-                </div>
-              </div>
 
               <button
                 type="submit"
@@ -372,7 +307,9 @@ const ProjectSubmission = () => {
 
                       {hasCert ? (
                         <a
-                          href={`http://localhost:5000/api/certificates/download/${hasCert.certificateId}`}
+                          href={`${axios.defaults.baseURL || 'http://localhost:5000/api'}/certificates/download/${hasCert.certificateId}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="flex items-center gap-1 text-[10px] font-black uppercase tracking-wider bg-brand-600 hover:bg-brand-500 text-white py-1.5 px-3 rounded-lg shadow-sm transition-colors"
                         >
                           <FileDown className="w-3.5 h-3.5" />

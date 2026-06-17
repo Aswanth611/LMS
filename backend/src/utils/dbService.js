@@ -415,9 +415,9 @@ module.exports = {
               const phaseId = stageIdx + 1;
               const nextPhase = phaseId + 1;
               
-              let unlockedPhases = learningPath.unlockedPhases || [1];
-              if (!unlockedPhases.includes(nextPhase)) {
-                unlockedPhases.push(nextPhase);
+              let unlockedPhases = (learningPath.unlockedPhases || [1]).map(Number);
+              if (!unlockedPhases.includes(Number(nextPhase))) {
+                unlockedPhases.push(Number(nextPhase));
               }
 
               let completedPhases = learningPath.completedPhases || [];
@@ -432,6 +432,8 @@ module.exports = {
               learningPath.currentPhase = Math.max(learningPath.currentPhase || 1, nextPhase);
               learningPath.completedPhases = completedPhases;
               learningPath.unlockedPhases = unlockedPhases;
+              learningPath.markModified('completedPhases');
+              learningPath.markModified('unlockedPhases');
               await learningPath.save();
             }
           }
@@ -500,9 +502,9 @@ module.exports = {
             const phaseId = stageIdx + 1;
             const nextPhase = phaseId + 1;
 
-            let unlockedPhases = learningPath.unlockedPhases || [1];
-            if (!unlockedPhases.includes(nextPhase)) {
-              unlockedPhases.push(nextPhase);
+            let unlockedPhases = (learningPath.unlockedPhases || [1]).map(Number);
+            if (!unlockedPhases.includes(Number(nextPhase))) {
+              unlockedPhases.push(Number(nextPhase));
             }
 
             let completedPhases = learningPath.completedPhases || [];
@@ -753,6 +755,8 @@ module.exports = {
         pathObj.currentPhase = currentPhase;
         pathObj.completedPhases = completedPhases;
         pathObj.unlockedPhases = unlockedPhases;
+        pathObj.markModified('completedPhases');
+        pathObj.markModified('unlockedPhases');
         await pathObj.save();
       }
       return pathObj;

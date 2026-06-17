@@ -217,7 +217,7 @@ const LearningPath = () => {
         }
         
         const phaseNumber = sIdx + 1;
-        const isUnlocked = roadmap.unlockedPhases ? roadmap.unlockedPhases.includes(phaseNumber) : (sIdx === 0);
+        const isUnlocked = roadmap.unlockedPhases ? roadmap.unlockedPhases.map(Number).includes(Number(phaseNumber)) : (sIdx === 0);
 
         if (isUnlocked && !isCompleted && !activeCourseInfo) {
           let nextTopic = 'None';
@@ -413,7 +413,7 @@ const LearningPath = () => {
               const isCompleted = currentProgress && (currentProgress.status === 'Completed' || currentProgress.quizPassed);
 
               const phaseNumber = idx + 1;
-              const isUnlocked = roadmap.unlockedPhases ? roadmap.unlockedPhases.includes(phaseNumber) : (idx === 0);
+              const isUnlocked = roadmap.unlockedPhases ? roadmap.unlockedPhases.map(Number).includes(Number(phaseNumber)) : (idx === 0);
 
               return (
                 <div key={idx} className="relative group">

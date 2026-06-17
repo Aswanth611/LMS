@@ -63,12 +63,7 @@ exports.submitQuiz = async (req, res) => {
     }
 
     if (questions.length === 0) {
-      return res.json({
-        success: true,
-        message: "Phase completed. Next phase unlocked.",
-        unlockedPhase: Number(phaseId) + 1,
-        score: 100
-      });
+      questions = quizzesData.c1;
     }
 
     let correctCount = 0;
@@ -84,9 +79,9 @@ exports.submitQuiz = async (req, res) => {
     if (passed) {
       const nextPhase = Number(phaseId) + 1;
       
-      let unlockedPhases = learningPath.unlockedPhases || [1];
-      if (!unlockedPhases.includes(nextPhase)) {
-        unlockedPhases.push(nextPhase);
+      let unlockedPhases = (learningPath.unlockedPhases || [1]).map(Number);
+      if (!unlockedPhases.includes(Number(nextPhase))) {
+        unlockedPhases.push(Number(nextPhase));
       }
 
       let completedPhases = learningPath.completedPhases || [];
