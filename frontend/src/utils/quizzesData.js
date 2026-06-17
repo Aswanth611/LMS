@@ -120,4 +120,35 @@ const quizzesData = {
   ]
 };
 
+export const getQuizForCourse = (course) => {
+  if (!course) return [];
+  const title = (course.title || "").toLowerCase();
+  if (title.includes("python")) {
+    return quizzesData.c1;
+  }
+  if (title.includes("machine learning")) {
+    return quizzesData.c2;
+  }
+  if (title.includes("deep learning") || title.includes("neural networks")) {
+    return quizzesData.c3;
+  }
+  if (title.includes("html") || title.includes("css") || title.includes("javascript")) {
+    return quizzesData.c4;
+  }
+  if (title.includes("react")) {
+    return quizzesData.c5;
+  }
+  if (title.includes("data science")) {
+    return quizzesData.c6;
+  }
+  if (title.includes("cyber security") || title.includes("networking")) {
+    return quizzesData.c7;
+  }
+  
+  const cId = (course._id || course.id || "").toString();
+  if (quizzesData[cId]) return quizzesData[cId];
+  
+  return quizzesData.c1; // default fallback
+};
+
 export default quizzesData;

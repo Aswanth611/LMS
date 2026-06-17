@@ -4,7 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import CourseCard from '../components/CourseCard';
 import axios from 'axios';
-import quizzesData from '../utils/quizzesData';
+import quizzesData, { getQuizForCourse } from '../utils/quizzesData';
 import { 
   BookOpen, 
   Search, 
@@ -111,7 +111,7 @@ const Courses = () => {
       if (location.state.startQuiz) {
         const course = courses.find(c => (c._id || c.id) === targetCourseId);
         if (course) {
-          const questions = quizzesData[targetCourseId.toString()] || [];
+          const questions = getQuizForCourse(course);
           setQuizQuestions(questions);
           setQuizAnswers({});
           setQuizScoreResult(null);
@@ -162,8 +162,7 @@ const Courses = () => {
   // Open quiz modal and fetch questions
   const handleOpenQuiz = () => {
     if (!selectedCourse) return;
-    const cId = selectedCourse._id || selectedCourse.id;
-    const questions = quizzesData[cId.toString()] || [];
+    const questions = getQuizForCourse(selectedCourse);
     setQuizQuestions(questions);
     setQuizAnswers({});
     setQuizScoreResult(null);

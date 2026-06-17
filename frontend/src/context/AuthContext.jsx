@@ -3,7 +3,14 @@ import axios from 'axios';
 
 export const AuthContext = createContext();
 
-const API_URL = 'https://ai-lms-backend-74qm.onrender.com/api';
+const getBaseURL = () => {
+  if (typeof window !== "undefined" && (window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1")) {
+    return "http://localhost:5000/api";
+  }
+  return "https://ai-lms-backend-74qm.onrender.com/api";
+};
+
+const API_URL = getBaseURL();
 
 // Set up default axios base url
 axios.defaults.baseURL = API_URL;
