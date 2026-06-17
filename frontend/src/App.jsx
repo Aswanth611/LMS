@@ -13,6 +13,7 @@ import MentorDashboard from './pages/MentorDashboard';
 import MentorReviews from './pages/MentorReviews';
 import MentorApproved from './pages/MentorApproved';
 import AdminDashboard from './pages/AdminDashboard';
+import Tracks from './pages/Tracks';
 import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
 
@@ -67,6 +68,7 @@ function App() {
           <Route path="/dashboard" element={<PrivateRoute><DashboardRedirect /></PrivateRoute>} />
 
           {/* Protected Student Routes */}
+          <Route path="/tracks" element={<PrivateRoute><Tracks /></PrivateRoute>} />
           <Route path="/learning-path" element={<PrivateRoute><LearningPath /></PrivateRoute>} />
           <Route path="/catalog" element={<PrivateRoute><Courses /></PrivateRoute>} />
           <Route path="/project-submission" element={<PrivateRoute><ProjectSubmission /></PrivateRoute>} />

@@ -93,5 +93,38 @@
       "Machine Learning"
     ],
     "createdAt": "2026-06-17T08:56:21.512Z"
+  },
+  {
+    "_id": "u_n89xdaocc",
+    "name": "Test Student",
+    "email": "test_1886@example.com",
+    "password": "$2a$10$Aq46bfWPRwo6q1JFicjSF.48cXx4TogZrKD.kqaEXANHYtxAfyqQ2",
+    "role": "student",
+    "selectedTrack": "",
+    "skillLevel": "",
+    "interests": [],
+    "createdAt": "2026-06-17T18:26:28.283Z"
+  },
+  {
+    "_id": "u_mentor",
+    "name": "Mentor User",
+    "email": "mentor@eduflick.ai",
+    "password": "$2a$10$ewin9bcuMK.GAhr8wVuc7e4sDNnSl6WENyp.7/hhcuXH5o9u176AC",
+    "role": "mentor",
+    "selectedTrack": "AI Engineer",
+    "skillLevel": "",
+    "interests": [],
+    "createdAt": "2026-06-17T18:29:57.601Z"
+  },
+  {
+    "_id": "u_mv6i3rhs2",
+    "name": "Test Mentor",
+    "email": "mentor_8322@example.com",
+    "password": "$2a$10$4KhRQqBUm1XEzfX3l3Q1suj5XLdanb/clI1H/Hvv/L/gEOBmurUEC",
+    "role": "mentor",
+    "selectedTrack": "",
+    "skillLevel": "",
+    "interests": [],
+    "createdAt": "2026-06-17T18:32:03.475Z"
   }
 ]

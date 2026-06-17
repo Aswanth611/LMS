@@ -139,46 +139,61 @@ const checkAndSeedLocalJSON = () => {
   }
 
   const users = readJSON('users');
-  if (users.length === 0) {
-    const salt = bcrypt.genSaltSync(10);
-    const adminPassword = bcrypt.hashSync('adminpassword', salt);
-    const studentPassword = bcrypt.hashSync('studentpassword', salt);
-    
-    writeJSON('users', [
-      {
-        _id: "u_admin",
-        name: "EduFlick Admin",
-        email: "admin@eduflick.ai",
-        password: adminPassword,
-        role: "admin",
-        selectedTrack: "AI Engineer",
-        skillLevel: "Advanced",
-        interests: [],
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: "u_student",
-        name: "John Doe",
-        email: "john@student.com",
-        password: studentPassword,
-        role: "student",
-        selectedTrack: "AI Engineer",
-        skillLevel: "Beginner",
-        interests: ["Python", "Machine Learning"],
-        createdAt: new Date().toISOString()
-      },
-      {
-        _id: "u_mentor",
-        name: "Mentor User",
-        email: "mentor@eduflick.ai",
-        password: bcrypt.hashSync('mentorpassword', salt),
-        role: "mentor",
-        selectedTrack: "AI Engineer",
-        skillLevel: "",
-        interests: [],
-        createdAt: new Date().toISOString()
-      }
-    ]);
+  let updated = false;
+
+  const adminExists = users.some(u => u.email === 'admin@eduflick.ai');
+  const studentExists = users.some(u => u.email === 'john@student.com');
+  const mentorExists = users.some(u => u.email === 'mentor@eduflick.ai');
+
+  const salt = bcrypt.genSaltSync(10);
+
+  if (!adminExists) {
+    users.push({
+      _id: "u_admin",
+      name: "EduFlick Admin",
+      email: "admin@eduflick.ai",
+      password: bcrypt.hashSync('adminpassword', salt),
+      role: "admin",
+      selectedTrack: "AI Engineer",
+      skillLevel: "Advanced",
+      interests: [],
+      createdAt: new Date().toISOString()
+    });
+    updated = true;
+  }
+
+  if (!studentExists) {
+    users.push({
+      _id: "u_student",
+      name: "John Doe",
+      email: "john@student.com",
+      password: bcrypt.hashSync('studentpassword', salt),
+      role: "student",
+      selectedTrack: "AI Engineer",
+      skillLevel: "Beginner",
+      interests: ["Python", "Machine Learning"],
+      createdAt: new Date().toISOString()
+    });
+    updated = true;
+  }
+
+  if (!mentorExists) {
+    users.push({
+      _id: "u_mentor",
+      name: "Mentor User",
+      email: "mentor@eduflick.ai",
+      password: bcrypt.hashSync('mentorpassword', salt),
+      role: "mentor",
+      selectedTrack: "AI Engineer",
+      skillLevel: "",
+      interests: [],
+      createdAt: new Date().toISOString()
+    });
+    updated = true;
+  }
+
+  if (updated) {
+    writeJSON('users', users);
   }
 };
 
