@@ -28,5 +28,44 @@
     "quizScore": 100,
     "quizPassed": true,
     "lastAccessed": "2026-06-17T19:01:49.576Z"
+  },
+  {
+    "_id": "p_0priz13x6",
+    "userId": "u_jq7xesxjm",
+    "courseId": "c1",
+    "completedModules": [
+      "Introduction to Python syntax",
+      "Control Flow & Functions",
+      "Data Structures in Python"
+    ],
+    "completionPercentage": 100,
+    "status": "Completed",
+    "quizScore": 100,
+    "quizPassed": true,
+    "lastAccessed": "2026-06-17T19:11:20.562Z"
+  },
+  {
+    "_id": "p_tucqkyj72",
+    "userId": "u_jq7xesxjm",
+    "courseId": "c2",
+    "completedModules": [
+      "Introduction to ML & Supervised Learning"
+    ],
+    "completionPercentage": 33,
+    "status": "In Progress",
+    "quizScore": -1,
+    "quizPassed": false,
+    "lastAccessed": "2026-06-17T19:11:20.576Z"
+  },
+  {
+    "_id": "p_4jms081c6",
+    "userId": "u_tukq8q3pn",
+    "courseId": "c1",
+    "completedModules": [],
+    "completionPercentage": 0,
+    "status": "Not Started",
+    "quizScore": 100,
+    "quizPassed": true,
+    "lastAccessed": "2026-06-17T19:12:09.174Z"
   }
 ]

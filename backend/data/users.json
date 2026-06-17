@@ -168,5 +168,32 @@
       "Machine Learning"
     ],
     "createdAt": "2026-06-17T19:01:49.525Z"
+  },
+  {
+    "_id": "u_jq7xesxjm",
+    "name": "Test Glitch Student",
+    "email": "test_student_6618@example.com",
+    "password": "$2a$10$kUGuV6zYVD9qIx5UpzpgROgzlje4nywem0dPYmGPALts0mz7neTTS",
+    "role": "student",
+    "selectedTrack": "AI Engineer",
+    "skillLevel": "Beginner",
+    "interests": [
+      "Python",
+      "Machine Learning"
+    ],
+    "createdAt": "2026-06-17T19:11:20.488Z"
+  },
+  {
+    "_id": "u_tukq8q3pn",
+    "name": "Test Quiz Student",
+    "email": "test_student_7205@example.com",
+    "password": "$2a$10$WS7qmIXnwEdSMb9BpQ44CeSImfvwR4DpbH8Cm063r6RuWYqoMStYS",
+    "role": "student",
+    "selectedTrack": "AI Engineer",
+    "skillLevel": "Beginner",
+    "interests": [
+      "Python"
+    ],
+    "createdAt": "2026-06-17T19:12:09.116Z"
   }
 ]

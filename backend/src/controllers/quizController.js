@@ -42,7 +42,25 @@ exports.submitQuiz = async (req, res) => {
     }
 
     const courseId = (courseObj._id || courseObj.id || courseObj).toString();
-    const questions = quizzesData[courseId] || [];
+    let questions = quizzesData[courseId] || [];
+    if (questions.length === 0 && courseObj) {
+      const title = (courseObj.title || "").toLowerCase();
+      if (title.includes("python")) {
+        questions = quizzesData.c1;
+      } else if (title.includes("machine learning")) {
+        questions = quizzesData.c2;
+      } else if (title.includes("deep learning") || title.includes("neural networks")) {
+        questions = quizzesData.c3;
+      } else if (title.includes("html") || title.includes("css") || title.includes("javascript")) {
+        questions = quizzesData.c4;
+      } else if (title.includes("react")) {
+        questions = quizzesData.c5;
+      } else if (title.includes("data science")) {
+        questions = quizzesData.c6;
+      } else if (title.includes("cyber security") || title.includes("networking")) {
+        questions = quizzesData.c7;
+      }
+    }
 
     if (questions.length === 0) {
       return res.json({
