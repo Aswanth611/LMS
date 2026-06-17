@@ -10,6 +10,39 @@ const connectDB = async () => {
     });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
     global.forceLocalDB = false;
+
+    // Auto-seed if MongoDB is empty
+    const Course = require('./models/Course');
+    const count = await Course.countDocuments();
+    if (count === 0) {
+      console.log('MongoDB is empty. Auto-seeding default courses and users...');
+      const User = require('./models/User');
+      const coursesData = require('./utils/coursesData');
+      
+      // 1. Seed courses
+      await Course.insertMany(coursesData);
+      console.log('Successfully seeded default courses to MongoDB.');
+      
+      // 2. Seed default users
+      await User.create({
+        name: "EduFlick Admin",
+        email: "admin@eduflick.ai",
+        password: "adminpassword",
+        role: "admin",
+        selectedTrack: "AI Engineer",
+        skillLevel: "Advanced"
+      });
+      await User.create({
+        name: "John Doe",
+        email: "john@student.com",
+        password: "studentpassword",
+        role: "student",
+        selectedTrack: "AI Engineer",
+        skillLevel: "Beginner",
+        interests: ["Python", "Machine Learning", "Neural Networks"]
+      });
+      console.log('Successfully seeded default users to MongoDB.');
+    }
   } catch (error) {
     global.forceLocalDB = true;
     console.warn('\n============================================================');

@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import CourseCard from '../components/CourseCard';
@@ -12,11 +13,13 @@ import {
   Award, 
   ChevronRight, 
   Clock, 
-  FileText 
+  FileText,
+  Lock
 } from 'lucide-react';
 
 const Courses = () => {
   const { user } = useContext(AuthContext);
+  const location = useLocation();
   const [courses, setCourses] = useState([]);
   const [progressMap, setProgressMap] = useState({});
   const [loading, setLoading] = useState(true);
@@ -92,6 +95,13 @@ const Courses = () => {
     setActiveProgress(progressMap[courseId] || null);
   };
 
+  // Auto-select course if redirected from Learning Path with state
+  useEffect(() => {
+    if (location.state && location.state.openCourseId && courses.length > 0) {
+      handleSelectCourse(location.state.openCourseId);
+    }
+  }, [location, courses, progressMap]);
+
   // Close course player panel
   const handleClosePanel = () => {
     setSelectedCourse(null);
@@ -127,6 +137,33 @@ const Courses = () => {
       }
     } catch (err) {
       console.error('Failed to update module state:', err);
+    }
+  };
+
+  // Mark all modules as completed/incompleted
+  const handleToggleAllModules = async (completeAll) => {
+    if (!selectedCourse) return;
+    const cId = selectedCourse._id || selectedCourse.id;
+    const completedList = completeAll 
+      ? (selectedCourse.modules || []).map(m => m.title)
+      : [];
+
+    try {
+      const res = await axios.put('/progress/update', {
+        courseId: cId,
+        completedModules: completedList
+      });
+
+      if (res.data.success) {
+        const updatedProgress = res.data.progress;
+        setProgressMap(prev => ({
+          ...prev,
+          [cId.toString()]: updatedProgress
+        }));
+        setActiveProgress(updatedProgress);
+      }
+    } catch (err) {
+      console.error('Failed to update all modules:', err);
     }
   };
 
@@ -239,23 +276,35 @@ const Courses = () => {
 
               {/* Progress Summary inside drawer */}
               {activeProgress && (
-                <div className="mb-6 p-4 rounded-xl bg-slate-950/40 border border-slate-850 flex items-center gap-3">
-                  {activeProgress.status === 'Completed' ? (
-                    <Award className="w-10 h-10 text-emerald-400 animate-bounce" />
-                  ) : (
-                    <div className="relative w-10 h-10 flex items-center justify-center font-bold text-xs text-brand-400 rounded-full border-2 border-brand-500/20">
-                      {activeProgress.completionPercentage}%
+                <>
+                  <div className="mb-6 p-4 rounded-xl bg-slate-950/40 border border-slate-850 flex items-center gap-3">
+                    {activeProgress.status === 'Completed' ? (
+                      <Award className="w-10 h-10 text-emerald-400 animate-bounce" />
+                    ) : (
+                      <div className="relative w-10 h-10 flex items-center justify-center font-bold text-xs text-brand-400 rounded-full border-2 border-brand-500/20">
+                        {activeProgress.completionPercentage}%
+                      </div>
+                    )}
+                    <div>
+                      <h5 className="text-xs font-bold text-white">Course Progress Details</h5>
+                      <p className="text-[10px] text-slate-400 mt-0.5">
+                        {activeProgress.status === 'Completed' 
+                          ? 'Congratulations! You graduated.' 
+                          : `${activeProgress.completedModules.length} of ${selectedCourse.modules.length} modules completed`}
+                      </p>
                     </div>
-                  )}
-                  <div>
-                    <h5 className="text-xs font-bold text-white">Course Progress Details</h5>
-                    <p className="text-[10px] text-slate-400 mt-0.5">
-                      {activeProgress.status === 'Completed' 
-                        ? 'Congratulations! You graduated.' 
-                        : `${activeProgress.completedModules.length} of ${selectedCourse.modules.length} modules completed`}
-                    </p>
                   </div>
-                </div>
+
+                  {activeProgress.status !== 'Completed' && (
+                    <button
+                      onClick={() => handleToggleAllModules(true)}
+                      className="w-full mb-6 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 text-[11px] font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                    >
+                      <CheckSquare className="w-4 h-4" />
+                      Mark Course as Completed
+                    </button>
+                  )}
+                </>
               )}
 
               {/* Modules List */}
@@ -266,21 +315,28 @@ const Courses = () => {
                 <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-2">
                   {selectedCourse.modules.map((mod, idx) => {
                     const isCompleted = activeProgress?.completedModules.includes(mod.title);
+                    // Lock logic: first is unlocked, subsequent require previous completed
+                    const isUnlocked = idx === 0 || (activeProgress && activeProgress.completedModules.includes(selectedCourse.modules[idx - 1].title));
+                    
                     return (
                       <div
                         key={idx}
-                        onClick={() => activeProgress && handleToggleModule(mod.title)}
-                        className={`flex gap-3 items-start p-3 rounded-xl border transition-all duration-200 cursor-pointer ${
+                        onClick={() => activeProgress && isUnlocked && handleToggleModule(mod.title)}
+                        className={`flex gap-3 items-start p-3 rounded-xl border transition-all duration-200 ${
                           !activeProgress 
                             ? 'opacity-60 pointer-events-none border-slate-800/40 bg-slate-800/5'
-                            : isCompleted 
-                              ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10'
-                              : 'border-slate-800 bg-slate-800/20 hover:border-slate-700 hover:bg-slate-800/40'
+                            : !isUnlocked
+                              ? 'opacity-50 cursor-not-allowed border-slate-800 bg-slate-900/40'
+                              : isCompleted 
+                                ? 'border-emerald-500/20 bg-emerald-500/5 hover:bg-emerald-500/10 cursor-pointer'
+                                : 'border-slate-800 bg-slate-800/20 hover:border-slate-700 hover:bg-slate-800/40 cursor-pointer'
                         }`}
                       >
-                        {/* Checkbox Icon */}
+                        {/* Checkbox or Lock Icon */}
                         {activeProgress ? (
-                          isCompleted ? (
+                          !isUnlocked ? (
+                            <Lock className="w-5 h-5 text-slate-600 shrink-0 mt-0.5" />
+                          ) : isCompleted ? (
                             <CheckSquare className="w-5 h-5 text-emerald-400 shrink-0 mt-0.5" />
                           ) : (
                             <Square className="w-5 h-5 text-slate-500 hover:text-brand-400 shrink-0 mt-0.5" />

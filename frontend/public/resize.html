@@ -31,16 +31,16 @@
             const base64 = canvas.toDataURL('image/png');
             updateStatus(`Resized to ${size}x${size}. Sending to backend...`);
             
-            const res = await fetch('http://localhost:5000/api/save-icon', {
-              method: 'POST',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                filename: `icon-${size}.png`,
-                base64: base64
-              })
-            });
+            const res = await fetch('https://ai-lms-backend-74qm.onrender.com/api/save-icon', {
+  method: 'POST',
+  headers: {
+    'Content-Type': 'application/json'
+  },
+  body: JSON.stringify({
+    filename: `icon-${size}.png`,
+    base64: base64
+  })
+});
             const data = await res.json();
             if (data.success) {
               updateStatus(`Saved icon-${size}.png successfully.`);

@@ -3,11 +3,12 @@ import { useNavigate, Link } from 'react-router-dom';
 import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import axios from 'axios';
-import { Map, MapPin, CheckCircle2, Circle, ArrowRight, Sparkles, AlertTriangle, RefreshCw } from 'lucide-react';
+import { Map, MapPin, CheckCircle2, Circle, ArrowRight, Sparkles, AlertTriangle, RefreshCw, Lock } from 'lucide-react';
 
 const LearningPath = () => {
   const { user } = useContext(AuthContext);
   const [roadmap, setRoadmap] = useState(null);
+  const [progressMap, setProgressMap] = useState({});
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   
@@ -17,6 +18,23 @@ const LearningPath = () => {
     setLoading(true);
     setError(null);
     try {
+      // 1. Fetch user progress
+      let progMap = {};
+      if (user) {
+        const userId = user.id || user._id;
+        const progressRes = await axios.get(`/progress/${userId}`);
+        if (progressRes.data.success) {
+          progressRes.data.progress.forEach(p => {
+            if (p.courseId) {
+              const cId = p.courseId._id || p.courseId.id || p.courseId;
+              progMap[cId.toString()] = p;
+            }
+          });
+        }
+      }
+      setProgressMap(progMap);
+
+      // 2. Fetch/generate learning path
       const res = await axios.post('/ai/generate-learning-path', {
         fetchOnly: !forceRegenerate
       });
@@ -31,6 +49,21 @@ const LearningPath = () => {
       setError("An error occurred while fetching your learning path.");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleQuickComplete = async (courseId, modules) => {
+    try {
+      const moduleTitles = modules ? modules.map(m => m.title) : [];
+      const res = await axios.put('/progress/update', {
+        courseId,
+        completedModules: moduleTitles
+      });
+      if (res.data.success) {
+        await fetchRoadmap(false);
+      }
+    } catch (err) {
+      console.error('Failed to quick complete course:', err);
     }
   };
 
@@ -101,23 +134,63 @@ const LearningPath = () => {
               const hasCourse = stage.courses && stage.courses.length > 0 && stage.courses[0];
               const linkedCourse = hasCourse ? stage.courses[0] : null;
 
+              // Calculate completion and unlock status
+              const currentCourseId = linkedCourse ? (linkedCourse._id || linkedCourse.id) : null;
+              const currentProgress = currentCourseId ? progressMap[currentCourseId.toString()] : null;
+              const isCompleted = currentProgress && currentProgress.status === 'Completed';
+
+              let isUnlocked = true;
+              if (idx > 0) {
+                const prevStage = roadmap.roadmapStages[idx - 1];
+                const prevCourse = prevStage.courses && prevStage.courses.length > 0 ? prevStage.courses[0] : null;
+                if (prevCourse) {
+                  const prevCourseId = prevCourse._id || prevCourse.id;
+                  const prevProgress = progressMap[prevCourseId.toString()];
+                  isUnlocked = prevProgress && prevProgress.status === 'Completed';
+                }
+              }
+
               return (
                 <div key={idx} className="relative group">
                   {/* Timeline bullet indicator node */}
-                  <span className="absolute -left-[41px] top-1 flex items-center justify-center w-6 h-6 rounded-full bg-slate-900 border-2 border-brand-500 group-hover:border-brand-400 transition-colors z-10">
-                    <MapPin className="w-3.5 h-3.5 text-brand-400 group-hover:text-brand-300 fill-current" />
+                  <span className={`absolute -left-[41px] top-1 flex items-center justify-center w-6 h-6 rounded-full bg-slate-900 border-2 transition-colors z-10 ${
+                    !isUnlocked
+                      ? 'border-slate-700'
+                      : isCompleted
+                        ? 'border-emerald-500'
+                        : 'border-brand-500 group-hover:border-brand-400'
+                  }`}>
+                    {!isUnlocked ? (
+                      <Lock className="w-3.5 h-3.5 text-slate-500" />
+                    ) : isCompleted ? (
+                      <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400 fill-current" />
+                    ) : (
+                      <MapPin className="w-3.5 h-3.5 text-brand-400 group-hover:text-brand-300 fill-current" />
+                    )}
                   </span>
 
                   {/* Stage Card */}
-                  <div className="glass-card p-6 rounded-2xl border border-slate-800/80">
+                  <div className={`glass-card p-6 rounded-2xl border transition-all duration-200 ${
+                    !isUnlocked
+                      ? 'opacity-50 border-slate-900 bg-slate-950/20'
+                      : 'border-slate-800/80'
+                  }`}>
                     {/* Header */}
                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-4">
-                      <span className="text-[10px] font-black uppercase text-brand-400 tracking-wider">
+                      <span className={`text-[10px] font-black uppercase tracking-wider ${
+                        !isUnlocked ? 'text-slate-500' : 'text-brand-400'
+                      }`}>
                         {stage.phase}
                       </span>
                       {hasCourse && (
-                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border bg-slate-900/60 border-slate-800 text-slate-400`}>
-                          Linked Course Available
+                        <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold border bg-slate-900/60 ${
+                          !isUnlocked
+                            ? 'border-slate-900 text-slate-600'
+                            : isCompleted
+                              ? 'border-emerald-500/20 text-emerald-400 bg-emerald-950/20'
+                              : 'border-slate-800 text-slate-400'
+                        }`}>
+                          {!isUnlocked ? 'Locked' : isCompleted ? 'Completed' : 'Active'}
                         </span>
                       )}
                     </div>
@@ -151,17 +224,44 @@ const LearningPath = () => {
 
                     {/* Action button */}
                     {hasCourse ? (
-                      <div className="mt-6 pt-4 border-t border-slate-800/60 flex justify-between items-center">
-                        <span className="text-[11px] text-slate-500 font-semibold italic">
+                      <div className="mt-6 pt-4 border-t border-slate-800/60 flex justify-between items-center gap-4">
+                        <span className={`text-[11px] font-semibold italic truncate ${
+                          !isUnlocked ? 'text-slate-600' : 'text-slate-500'
+                        }`}>
                           Target Course: {linkedCourse.title}
                         </span>
-                        <Link
-                          to="/courses"
-                          className="flex items-center gap-1.5 text-xs font-bold bg-brand-600/10 text-brand-300 hover:bg-brand-600/20 border border-brand-500/20 hover:border-brand-500/40 py-2 px-4 rounded-xl transition-all duration-200"
-                        >
-                          Enroll / Resume
-                          <ArrowRight className="w-3.5 h-3.5" />
-                        </Link>
+                        
+                        {!isUnlocked ? (
+                          <button
+                            disabled
+                            className="flex items-center gap-1.5 text-xs font-bold bg-slate-800 text-slate-500 border border-slate-700/50 py-2 px-4 rounded-xl cursor-not-allowed shrink-0"
+                          >
+                            Locked
+                            <Lock className="w-3.5 h-3.5" />
+                          </button>
+                        ) : isCompleted ? (
+                          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 px-4 rounded-xl shrink-0">
+                            Completed
+                            <CheckCircle2 className="w-3.5 h-3.5" />
+                          </span>
+                        ) : (
+                          <div className="flex items-center gap-2 shrink-0">
+                            <button
+                              onClick={() => handleQuickComplete(currentCourseId, linkedCourse.modules)}
+                              className="flex items-center gap-1.5 text-xs font-bold bg-emerald-600/10 text-emerald-300 hover:bg-emerald-600/20 border border-emerald-500/20 hover:border-emerald-500/40 py-2 px-4 rounded-xl transition-all duration-200"
+                            >
+                              Quick Complete
+                            </button>
+                            <Link
+                              to="/courses"
+                              state={{ openCourseId: currentCourseId }}
+                              className="flex items-center gap-1.5 text-xs font-bold bg-brand-600/10 text-brand-300 hover:bg-brand-600/20 border border-brand-500/20 hover:border-brand-500/40 py-2 px-4 rounded-xl transition-all duration-200"
+                            >
+                              Enroll / Resume
+                              <ArrowRight className="w-3.5 h-3.5" />
+                            </Link>
+                          </div>
+                        )}
                       </div>
                     ) : (
                       <div className="mt-5 pt-4 border-t border-slate-800/60">
