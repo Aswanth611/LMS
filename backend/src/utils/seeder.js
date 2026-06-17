@@ -1,3 +1,4 @@
+const path = require('path');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const bcrypt = require('bcryptjs');
@@ -7,7 +8,7 @@ const Progress = require('../models/Progress');
 const LearningPath = require('../models/LearningPath');
 
 // Load env vars
-dotenv.config({ path: __dirname + '/../../.env' });
+dotenv.config({ path: path.join(__dirname, '../../.env') });
 
 const courses = [
   // AI Engineer Track
@@ -192,12 +193,10 @@ const seedData = async () => {
     await User.deleteMany({});
 
     // Create Admin
-    const saltAdmin = await bcrypt.genSalt(10);
-    const adminPasswordHash = await bcrypt.hash('adminpassword', saltAdmin);
     await User.create({
       name: "EduFlick Admin",
       email: "admin@eduflick.ai",
-      password: adminPasswordHash,
+      password: "adminpassword",
       role: "admin",
       selectedTrack: "AI Engineer",
       skillLevel: "Advanced"
@@ -205,12 +204,10 @@ const seedData = async () => {
     console.log('Seeded Admin: admin@eduflick.ai / adminpassword');
 
     // Create Student
-    const saltStudent = await bcrypt.genSalt(10);
-    const studentPasswordHash = await bcrypt.hash('studentpassword', saltStudent);
     await User.create({
       name: "John Doe",
       email: "john@student.com",
-      password: studentPasswordHash,
+      password: "studentpassword",
       role: "student",
       selectedTrack: "AI Engineer",
       skillLevel: "Beginner",

@@ -4,9 +4,14 @@ const dotenv = require('dotenv');
 const connectDB = async () => {
   try {
     const mongoose = require('mongoose');
-    const conn = await mongoose.connect(process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ai-lms');
+    const mongoUri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/ai-lms';
+    const conn = await mongoose.connect(mongoUri, {
+      serverSelectionTimeoutMS: 2000 // 2 seconds timeout
+    });
     console.log(`MongoDB Connected: ${conn.connection.host}`);
+    global.forceLocalDB = false;
   } catch (error) {
+    global.forceLocalDB = true;
     console.warn('\n============================================================');
     console.warn(`WARNING: MongoDB is not running locally (${error.message}).`);
     console.warn('The engine will automatically use the local JSON file database!');
@@ -22,17 +27,11 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: [
-    "http://localhost:5173",
-    "https://ai-app-beta-six.vercel.app/"
-  ],
+  origin: true,
   credentials: true
 }));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
-
-// Connect to Database (Handle gracefully if Mongo is offline)
-connectDB();
 
 // Mount routes
 app.use('/api/auth', require('./routes/authRoutes'));
@@ -88,6 +87,12 @@ app.use((err, req, res, next) => {
 });
 
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-  console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
-});
+
+const startServer = async () => {
+  await connectDB();
+  app.listen(PORT, () => {
+    console.log(`Server running in ${process.env.NODE_ENV || 'development'} mode on port ${PORT}`);
+  });
+};
+
+startServer();

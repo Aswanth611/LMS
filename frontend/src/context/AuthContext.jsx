@@ -64,7 +64,11 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
+      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Could not connect to the backend server. Please make sure the backend is running!');
+      } else {
+        setError(err.response?.data?.message || 'Registration failed');
+      }
       setLoading(false);
       return false;
     }
@@ -83,7 +87,11 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Invalid email or password');
+      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Could not connect to the backend server. Please make sure the backend is running!');
+      } else {
+        setError(err.response?.data?.message || 'Invalid email or password');
+      }
       setLoading(false);
       return false;
     }
@@ -105,7 +113,11 @@ export const AuthProvider = ({ children }) => {
         return true;
       }
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to update profile');
+      if (err.message === 'Network Error' || err.code === 'ERR_NETWORK' || !err.response) {
+        setError('Could not connect to the backend server. Please make sure the backend is running!');
+      } else {
+        setError(err.response?.data?.message || 'Failed to update profile');
+      }
       return false;
     }
   };

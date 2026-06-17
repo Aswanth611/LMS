@@ -100,5 +100,107 @@
         ]
       }
     ]
+  },
+  {
+    "_id": "lp_2n6xj3sfa",
+    "userId": "u_9j0vc3wah",
+    "createdAt": "2026-06-17T06:13:29.746Z",
+    "recommendedCourses": [
+      "c1",
+      "c2",
+      "c3"
+    ],
+    "roadmapStages": [
+      {
+        "phase": "Phase 1: Beginner",
+        "title": "Python Fundamentals for AI",
+        "description": "Learn Python programming language essentials tailored specifically for data manipulation, scripting, and basic AI computations.",
+        "topics": [
+          "Introduction to Python syntax",
+          "Control Flow & Functions",
+          "Data Structures in Python"
+        ],
+        "courses": [
+          "c1"
+        ]
+      },
+      {
+        "phase": "Phase 2: Intermediate",
+        "title": "Machine Learning Essentials",
+        "description": "An end-to-end guide to modern machine learning. Dive deep into supervised and unsupervised learning.",
+        "topics": [
+          "Introduction to ML & Supervised Learning",
+          "Unsupervised Learning Algorithms",
+          "Model Evaluation"
+        ],
+        "courses": [
+          "c2"
+        ]
+      },
+      {
+        "phase": "Phase 3: Advanced",
+        "title": "Deep Learning & Neural Networks",
+        "description": "Unlock the power of neural networks. Master Feedforward networks, CNNs, RNNs, and Transformers.",
+        "topics": [
+          "Neural Network Mathematics",
+          "Convolutional Networks (CNNs)",
+          "Transformers and LLMs"
+        ],
+        "courses": [
+          "c3"
+        ]
+      }
+    ]
+  },
+  {
+    "_id": "lp_alo0wdt4u",
+    "userId": "u_n7f1m5liu",
+    "createdAt": "2026-06-17T06:37:40.399Z",
+    "recommendedCourses": [
+      "c1",
+      "c2",
+      "c3"
+    ],
+    "roadmapStages": [
+      {
+        "phase": "Phase 1: Beginner",
+        "title": "Python Fundamentals for AI",
+        "description": "Learn Python programming language essentials tailored specifically for data manipulation, scripting, and basic AI computations.",
+        "topics": [
+          "Introduction to Python syntax",
+          "Control Flow & Functions",
+          "Data Structures in Python"
+        ],
+        "courses": [
+          "c1"
+        ]
+      },
+      {
+        "phase": "Phase 2: Intermediate",
+        "title": "Machine Learning Essentials",
+        "description": "An end-to-end guide to modern machine learning. Dive deep into supervised and unsupervised learning.",
+        "topics": [
+          "Introduction to ML & Supervised Learning",
+          "Unsupervised Learning Algorithms",
+          "Model Evaluation"
+        ],
+        "courses": [
+          "c2"
+        ]
+      },
+      {
+        "phase": "Phase 3: Advanced",
+        "title": "Deep Learning & Neural Networks",
+        "description": "Unlock the power of neural networks. Master Feedforward networks, CNNs, RNNs, and Transformers.",
+        "topics": [
+          "Neural Network Mathematics",
+          "Convolutional Networks (CNNs)",
+          "Transformers and LLMs"
+        ],
+        "courses": [
+          "c3"
+        ]
+      }
+    ]
   }
 ]
