@@ -8,6 +8,7 @@ const Register = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState('student');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
@@ -15,8 +16,9 @@ const Register = () => {
   // Redirect if already logged in
   useEffect(() => {
     if (user) {
-      // If student is logged in, navigate to tracks choice if they haven't selected one
-      if (user.role === 'student' && !user.selectedTrack) {
+      if (user.role === 'mentor') {
+        navigate('/mentor-dashboard');
+      } else if (user.role === 'student' && !user.selectedTrack) {
         navigate('/tracks');
       } else {
         navigate('/dashboard');
@@ -35,10 +37,14 @@ const Register = () => {
     }
 
     setLoading(true);
-    const success = await register(name, email, password, 'student');
+    const success = await register(name, email, password, role);
     setLoading(false);
     if (success) {
-      navigate('/tracks');
+      if (role === 'mentor') {
+        navigate('/mentor-dashboard');
+      } else {
+        navigate('/tracks');
+      }
     }
   };
 
@@ -117,6 +123,20 @@ const Register = () => {
                 className="w-full bg-slate-950/60 border border-slate-800 focus:border-brand-500 rounded-xl pl-11 pr-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none transition-colors"
               />
             </div>
+          </div>
+
+          <div>
+            <label className="text-xs font-bold text-slate-400 uppercase tracking-wider block mb-1.5">
+              Select Your Role
+            </label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value)}
+              className="w-full bg-slate-950/60 border border-slate-800 focus:border-brand-500 rounded-xl px-4 py-2.5 text-xs text-white focus:outline-none focus:ring-0 transition-colors"
+            >
+              <option value="student">Student</option>
+              <option value="mentor">Mentor</option>
+            </select>
           </div>
 
           <button

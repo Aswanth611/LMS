@@ -32,7 +32,7 @@ exports.register = async (req, res) => {
       });
     }
 
-    const userRole = role === 'admin' ? 'admin' : 'student';
+    const userRole = ['student', 'mentor', 'admin'].includes(role) ? role : 'student';
 
     // Create user
     const user = await dbService.createUser({
