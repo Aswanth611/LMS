@@ -189,7 +189,7 @@ const Courses = () => {
     });
 
     const score = Math.round((correctCount / quizQuestions.length) * 100);
-    const passed = score >= 70;
+    const passed = score >= 60;
 
     try {
       const cId = selectedCourse._id || selectedCourse.id;

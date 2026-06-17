@@ -364,7 +364,7 @@ module.exports = {
 
       if (data.quizScore !== undefined) {
         progress.quizScore = Number(data.quizScore);
-        progress.quizPassed = Number(data.quizScore) >= 70;
+        progress.quizPassed = Number(data.quizScore) >= 60;
       }
 
       if (progress.completionPercentage >= 100 && progress.quizPassed) {
@@ -413,7 +413,7 @@ module.exports = {
 
     if (data.quizScore !== undefined) {
       progress.quizScore = Number(data.quizScore);
-      progress.quizPassed = Number(data.quizScore) >= 70;
+      progress.quizPassed = Number(data.quizScore) >= 60;
     }
 
     if (progress.completionPercentage >= 100 && progress.quizPassed) {

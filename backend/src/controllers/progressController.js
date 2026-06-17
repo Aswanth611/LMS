@@ -34,7 +34,7 @@ exports.getProgressByUser = async (req, res) => {
 // @access  Private
 exports.updateProgress = async (req, res) => {
   try {
-    const { courseId, completedModules, completionPercentage } = req.body;
+    const { courseId, completedModules, completionPercentage, quizScore } = req.body;
     const userId = req.user.id || req.user._id;
 
     if (!courseId) {
@@ -56,7 +56,8 @@ exports.updateProgress = async (req, res) => {
     // Perform database operations using dbService
     const progress = await dbService.updateProgress(userId, courseId, {
       completedModules,
-      completionPercentage
+      completionPercentage,
+      quizScore
     });
 
     res.json({

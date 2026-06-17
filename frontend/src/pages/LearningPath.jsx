@@ -109,7 +109,7 @@ const LearningPath = () => {
     });
 
     const score = Math.round((correctCount / quizQuestions.length) * 100);
-    const passed = score >= 70;
+    const passed = score >= 60;
 
     try {
       const cId = selectedCourseForQuiz._id || selectedCourseForQuiz.id;
@@ -120,6 +120,22 @@ const LearningPath = () => {
 
       if (res.data.success) {
         setQuizScoreResult({ score, passed });
+        if (passed) {
+          setProgressMap(prev => {
+            const key = cId.toString();
+            const existing = prev[key] || {};
+            return {
+              ...prev,
+              [key]: {
+                ...existing,
+                quizScore: score,
+                quizPassed: true,
+                status: 'Completed',
+                completionPercentage: 100
+              }
+            };
+          });
+        }
         await fetchRoadmap(false); // reload progress
       }
     } catch (err) {
@@ -196,18 +212,18 @@ const LearningPath = () => {
               const linkedCourse = hasCourse ? stage.courses[0] : null;
 
               // Calculate completion and unlock status
-              const currentCourseId = linkedCourse ? (linkedCourse._id || linkedCourse.id) : null;
-              const currentProgress = currentCourseId ? progressMap[currentCourseId.toString()] : null;
-              const isCompleted = currentProgress && currentProgress.status === 'Completed';
+              const currentCourseId = linkedCourse ? (linkedCourse._id || linkedCourse.id || linkedCourse).toString() : null;
+              const currentProgress = currentCourseId ? progressMap[currentCourseId] : null;
+              const isCompleted = currentProgress && (currentProgress.status === 'Completed' || currentProgress.quizPassed);
 
               let isUnlocked = true;
               if (idx > 0) {
                 const prevStage = roadmap.roadmapStages[idx - 1];
                 const prevCourse = prevStage.courses && prevStage.courses.length > 0 ? prevStage.courses[0] : null;
                 if (prevCourse) {
-                  const prevCourseId = prevCourse._id || prevCourse.id;
-                  const prevProgress = progressMap[prevCourseId.toString()];
-                  isUnlocked = prevProgress && prevProgress.status === 'Completed';
+                  const prevCourseId = (prevCourse._id || prevCourse.id || prevCourse).toString();
+                  const prevProgress = progressMap[prevCourseId];
+                  isUnlocked = prevProgress && (prevProgress.status === 'Completed' || prevProgress.quizPassed);
                 }
               }
 
