@@ -112,7 +112,7 @@ const Tracks = () => {
   };
 
   return (
-    <div className="pl-64 min-h-screen bg-slate-900 grid-bg pb-12">
+    <div className="pl-0 min-h-screen bg-slate-900 grid-bg pb-12">
       <Navbar title="Career Track Selection" />
       
       <div className="max-w-4xl mx-auto px-8 py-8 relative z-10">

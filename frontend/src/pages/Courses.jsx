@@ -4,6 +4,7 @@ import { AuthContext } from '../context/AuthContext';
 import Navbar from '../components/Navbar';
 import CourseCard from '../components/CourseCard';
 import axios from 'axios';
+import quizzesData from '../utils/quizzesData';
 import { 
   BookOpen, 
   Search, 
@@ -29,6 +30,12 @@ const Courses = () => {
   // Selected course details state
   const [selectedCourse, setSelectedCourse] = useState(null);
   const [activeProgress, setActiveProgress] = useState(null);
+
+  // Quiz Modal state
+  const [showQuizModal, setShowQuizModal] = useState(false);
+  const [quizQuestions, setQuizQuestions] = useState([]);
+  const [quizAnswers, setQuizAnswers] = useState({});
+  const [quizScoreResult, setQuizScoreResult] = useState(null); // { score, passed }
 
   // Fetch all courses and user's progress list
   const fetchData = async () => {
@@ -98,9 +105,21 @@ const Courses = () => {
   // Auto-select course if redirected from Learning Path with state
   useEffect(() => {
     if (location.state && location.state.openCourseId && courses.length > 0) {
-      handleSelectCourse(location.state.openCourseId);
+      const targetCourseId = location.state.openCourseId;
+      handleSelectCourse(targetCourseId);
+      
+      if (location.state.startQuiz) {
+        const course = courses.find(c => (c._id || c.id) === targetCourseId);
+        if (course) {
+          const questions = quizzesData[targetCourseId.toString()] || [];
+          setQuizQuestions(questions);
+          setQuizAnswers({});
+          setQuizScoreResult(null);
+          setShowQuizModal(true);
+        }
+      }
     }
-  }, [location, courses, progressMap]);
+  }, [location, courses]);
 
   // Close course player panel
   const handleClosePanel = () => {
@@ -140,18 +159,44 @@ const Courses = () => {
     }
   };
 
-  // Mark all modules as completed/incompleted
-  const handleToggleAllModules = async (completeAll) => {
+  // Open quiz modal and fetch questions
+  const handleOpenQuiz = () => {
     if (!selectedCourse) return;
     const cId = selectedCourse._id || selectedCourse.id;
-    const completedList = completeAll 
-      ? (selectedCourse.modules || []).map(m => m.title)
-      : [];
+    const questions = quizzesData[cId.toString()] || [];
+    setQuizQuestions(questions);
+    setQuizAnswers({});
+    setQuizScoreResult(null);
+    setShowQuizModal(true);
+  };
+
+  // Handle selecting an answer choice for a quiz question
+  const handleSelectQuizAnswer = (qIdx, optionIdx) => {
+    setQuizAnswers(prev => ({
+      ...prev,
+      [qIdx]: optionIdx
+    }));
+  };
+
+  // Submit quiz answers to calculation and save progress in backend
+  const handleSubmitQuiz = async () => {
+    if (!selectedCourse || quizQuestions.length === 0) return;
+
+    let correctCount = 0;
+    quizQuestions.forEach((q, idx) => {
+      if (quizAnswers[idx] === q.answerIndex) {
+        correctCount++;
+      }
+    });
+
+    const score = Math.round((correctCount / quizQuestions.length) * 100);
+    const passed = score >= 70;
 
     try {
+      const cId = selectedCourse._id || selectedCourse.id;
       const res = await axios.put('/progress/update', {
         courseId: cId,
-        completedModules: completedList
+        quizScore: score
       });
 
       if (res.data.success) {
@@ -161,9 +206,10 @@ const Courses = () => {
           [cId.toString()]: updatedProgress
         }));
         setActiveProgress(updatedProgress);
+        setQuizScoreResult({ score, passed });
       }
     } catch (err) {
-      console.error('Failed to update all modules:', err);
+      console.error('Failed to submit quiz:', err);
     }
   };
 
@@ -180,10 +226,10 @@ const Courses = () => {
   const categories = ['All', 'AI Engineer', 'Full Stack Developer', 'Data Scientist', 'Cyber Security Specialist'];
 
   return (
-    <div className="pl-64 min-h-screen bg-slate-900 grid-bg pb-12">
+    <div className="pl-0 min-h-screen bg-slate-900 grid-bg pb-12">
       <Navbar title="Explore Courses" />
 
-      <div className="px-8 py-8 relative z-10 flex gap-8">
+      <div className="px-6 sm:px-8 py-8 relative z-10 flex flex-col lg:flex-row gap-8">
         
         {/* Main Content Area */}
         <div className="flex-1">
@@ -252,9 +298,17 @@ const Courses = () => {
           )}
         </div>
 
+        {/* Backdrop overlay for Course Drawer on mobile/tablet */}
+        {selectedCourse && (
+          <div 
+            onClick={handleClosePanel}
+            className="fixed inset-0 bg-slate-950/60 backdrop-blur-sm z-20 lg:hidden cursor-pointer animate-fade-in"
+          />
+        )}
+
         {/* Course Player Drawer (Right Sidebar) */}
         {selectedCourse && (
-          <div className="w-96 shrink-0 glass-panel border border-slate-800 rounded-2xl p-6 h-[calc(100vh-140px)] flex flex-col justify-between sticky top-24 animate-fade-in shadow-2xl">
+          <div className="fixed lg:sticky right-0 top-0 lg:top-24 h-screen lg:h-[calc(100vh-140px)] w-full max-w-md lg:w-96 glass-panel border-l lg:border border-slate-800 lg:rounded-2xl p-6 flex flex-col justify-between z-30 lg:z-10 animate-fade-in shadow-2xl overflow-y-auto">
             {/* Header */}
             <div>
               <div className="flex justify-between items-start gap-4 mb-4">
@@ -268,7 +322,7 @@ const Courses = () => {
                 </div>
                 <button
                   onClick={handleClosePanel}
-                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white"
+                  className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
                 >
                   <X className="w-5 h-5" />
                 </button>
@@ -295,24 +349,27 @@ const Courses = () => {
                     </div>
                   </div>
 
-                  {activeProgress.status !== 'Completed' && (
+                  {/* Show Take Phase Quiz if all modules completed but quiz not yet passed */}
+                  {selectedCourse.modules && selectedCourse.modules.length > 0 && 
+                   activeProgress.completedModules.length === selectedCourse.modules.length && 
+                   !activeProgress.quizPassed && (
                     <button
-                      onClick={() => handleToggleAllModules(true)}
-                      className="w-full mb-6 bg-emerald-600/10 hover:bg-emerald-600/20 text-emerald-400 hover:text-emerald-300 border border-emerald-500/20 hover:border-emerald-500/40 text-[11px] font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
+                      onClick={handleOpenQuiz}
+                      className="w-full mb-6 bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 text-white font-bold py-2.5 px-4 rounded-xl flex items-center justify-center gap-1.5 shadow-lg transition-colors cursor-pointer text-xs"
                     >
-                      <CheckSquare className="w-4 h-4" />
-                      Mark Course as Completed
+                      <Award className="w-4 h-4 text-white" />
+                      Take Phase Quiz
                     </button>
                   )}
                 </>
               )}
 
               {/* Modules List */}
-              <div>
+              <div className="mb-6">
                 <h4 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider block mb-3">
                   Course Modules & Tasks
                 </h4>
-                <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-2">
+                <div className="space-y-3.5 max-h-[300px] overflow-y-auto pr-2 scrollbar-thin">
                   {selectedCourse.modules.map((mod, idx) => {
                     const isCompleted = activeProgress?.completedModules.includes(mod.title);
                     // Lock logic: first is unlocked, subsequent require previous completed
@@ -368,11 +425,11 @@ const Courses = () => {
               </div>
             </div>
 
-            {/* Bottom Panel Prompt */}
+            {/* Bottom Panel Enroll Button */}
             {!activeProgress && (
               <button
                 onClick={() => handleEnroll(selectedCourse._id || selectedCourse.id)}
-                className="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors text-xs mt-6"
+                className="w-full bg-brand-600 hover:bg-brand-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg transition-colors text-xs mt-6 cursor-pointer"
               >
                 Enroll to Unlock Modules
               </button>
@@ -380,6 +437,120 @@ const Courses = () => {
           </div>
         )}
       </div>
+
+      {/* Quiz Modal Overlay */}
+      {showQuizModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center z-50 p-4">
+          <div className="w-full max-w-lg glass-panel border border-slate-800 rounded-3xl p-6 sm:p-8 flex flex-col justify-between shadow-2xl relative animate-fade-in max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setShowQuizModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white cursor-pointer"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            {quizScoreResult === null ? (
+              <div>
+                <h3 className="text-lg font-black text-white mb-1 uppercase tracking-tight flex items-center gap-2">
+                  <Award className="w-5 h-5 text-brand-400" />
+                  Phase Quiz: {selectedCourse.title}
+                </h3>
+                <p className="text-slate-400 text-xs mb-6 pb-4 border-b border-slate-800/80">
+                  Pass this quiz with at least 70% (2/3 correct) to unlock the next phase!
+                </p>
+
+                <div className="space-y-6">
+                  {quizQuestions.map((q, qIdx) => (
+                    <div key={qIdx} className="space-y-2.5">
+                      <h4 className="text-xs font-bold text-slate-200">
+                        {qIdx + 1}. {q.question}
+                      </h4>
+                      <div className="grid grid-cols-1 gap-2">
+                        {q.options.map((opt, optIdx) => {
+                          const isSelected = quizAnswers[qIdx] === optIdx;
+                          return (
+                            <button
+                              key={optIdx}
+                              onClick={() => handleSelectQuizAnswer(qIdx, optIdx)}
+                              className={`text-left p-3.5 rounded-xl border text-xs font-medium transition-all duration-150 cursor-pointer ${
+                                isSelected
+                                  ? 'border-brand-500 bg-brand-500/10 text-white font-bold'
+                                  : 'border-slate-800 bg-slate-950/40 text-slate-300 hover:border-slate-700 hover:bg-slate-900/40'
+                              }`}
+                            >
+                              {opt}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="mt-8 pt-6 border-t border-slate-800/80 flex justify-end gap-3">
+                  <button
+                    onClick={() => setShowQuizModal(false)}
+                    className="py-2.5 px-5 rounded-xl text-xs font-semibold text-slate-400 hover:text-white hover:bg-slate-800 transition-colors cursor-pointer"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleSubmitQuiz}
+                    disabled={Object.keys(quizAnswers).length < quizQuestions.length}
+                    className="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-lg transition-colors disabled:opacity-50 cursor-pointer"
+                  >
+                    Submit Quiz
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <div className="text-center py-6">
+                {quizScoreResult.passed ? (
+                  <>
+                    <Award className="w-16 h-16 text-emerald-400 mx-auto animate-bounce mb-4" />
+                    <h3 className="text-xl font-black text-white tracking-tight mb-2">Congratulations! You Passed!</h3>
+                    <p className="text-slate-300 text-sm mb-4">
+                      You scored <span className="text-emerald-400 font-extrabold">{quizScoreResult.score}%</span> on the quiz.
+                    </p>
+                    <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed mb-6">
+                      You have successfully completed this learning phase. The next phase in your curriculum roadmap has been unlocked.
+                    </p>
+                  </>
+                ) : (
+                  <>
+                    <X className="w-16 h-16 text-red-500 border-4 border-red-500/20 rounded-full p-2 mx-auto mb-4" />
+                    <h3 className="text-xl font-black text-white tracking-tight mb-2">Quiz Failed</h3>
+                    <p className="text-slate-300 text-sm mb-4">
+                      You scored <span className="text-red-400 font-extrabold">{quizScoreResult.score}%</span>.
+                    </p>
+                    <p className="text-slate-400 text-xs max-w-sm mx-auto leading-relaxed mb-6">
+                      You need at least 70% (2 out of 3 correct answers) to pass and graduate to the next phase. Review the topics and try again!
+                    </p>
+                  </>
+                )}
+
+                <div className="flex justify-center gap-3">
+                  {quizScoreResult.passed ? (
+                    <button
+                      onClick={() => setShowQuizModal(false)}
+                      className="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-lg transition-colors cursor-pointer"
+                    >
+                      Close & Continue
+                    </button>
+                  ) : (
+                    <button
+                      onClick={handleOpenQuiz}
+                      className="bg-brand-600 hover:bg-brand-500 text-white font-bold py-2.5 px-6 rounded-xl text-xs shadow-lg transition-colors cursor-pointer"
+                    >
+                      Retake Quiz
+                    </button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

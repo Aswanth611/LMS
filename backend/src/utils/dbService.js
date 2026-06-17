@@ -362,7 +362,19 @@ module.exports = {
         progress.completionPercentage = data.completionPercentage;
       }
 
-      progress.status = progress.completionPercentage === 0 ? 'Not Started' : (progress.completionPercentage >= 100 ? 'Completed' : 'In Progress');
+      if (data.quizScore !== undefined) {
+        progress.quizScore = Number(data.quizScore);
+        progress.quizPassed = Number(data.quizScore) >= 70;
+      }
+
+      if (progress.completionPercentage >= 100 && progress.quizPassed) {
+        progress.status = 'Completed';
+      } else if (progress.completionPercentage > 0) {
+        progress.status = 'In Progress';
+      } else {
+        progress.status = 'Not Started';
+      }
+
       progress.lastAccessed = new Date();
       await progress.save();
       return await Progress.findById(progress._id).populate('courseId');
@@ -384,6 +396,8 @@ module.exports = {
         completedModules: [],
         completionPercentage: 0,
         status: 'Not Started',
+        quizScore: -1,
+        quizPassed: false,
         lastAccessed: new Date().toISOString()
       };
       progressList.push(progress);
@@ -397,7 +411,19 @@ module.exports = {
       progress.completionPercentage = data.completionPercentage;
     }
 
-    progress.status = progress.completionPercentage === 0 ? 'Not Started' : (progress.completionPercentage >= 100 ? 'Completed' : 'In Progress');
+    if (data.quizScore !== undefined) {
+      progress.quizScore = Number(data.quizScore);
+      progress.quizPassed = Number(data.quizScore) >= 70;
+    }
+
+    if (progress.completionPercentage >= 100 && progress.quizPassed) {
+      progress.status = 'Completed';
+    } else if (progress.completionPercentage > 0) {
+      progress.status = 'In Progress';
+    } else {
+      progress.status = 'Not Started';
+    }
+
     progress.lastAccessed = new Date().toISOString();
     
     writeJSON('progress', progressList);

@@ -127,8 +127,8 @@ const AdminDashboard = () => {
   const averageCompletionRate = 67; // Simulated system completion rate
 
   return (
-    <div className="pl-64 min-h-screen bg-slate-900 grid-bg pb-16">
-      <Navbar title="Admin Portal" />
+    <div className="pl-0 min-h-screen bg-slate-900 grid-bg pb-16">
+      <Navbar title="Administrator Portal" />
 
       <div className="px-8 py-8 relative z-10 space-y-8 max-w-6xl mx-auto">
         

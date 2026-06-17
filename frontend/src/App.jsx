@@ -15,7 +15,7 @@ import Chatbot from './components/Chatbot';
 
 // Private Route Wrapper
 const PrivateRoute = ({ children }) => {
-  const { user, loading } = useContext(AuthContext);
+  const { user, loading, sidebarOpen, setSidebarOpen } = useContext(AuthContext);
 
   if (loading) {
     return (
@@ -31,9 +31,9 @@ const PrivateRoute = ({ children }) => {
   }
 
   return (
-    <div className="min-h-screen bg-slate-900 text-slate-100">
+    <div className="min-h-screen bg-slate-900 text-slate-100 flex flex-col lg:flex-row">
       <Sidebar />
-      <div className="min-h-screen">
+      <div className="flex-1 min-h-screen transition-all duration-300 lg:pl-64">
         {children}
       </div>
       <Chatbot />

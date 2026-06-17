@@ -52,20 +52,6 @@ const LearningPath = () => {
     }
   };
 
-  const handleQuickComplete = async (courseId, modules) => {
-    try {
-      const moduleTitles = modules ? modules.map(m => m.title) : [];
-      const res = await axios.put('/progress/update', {
-        courseId,
-        completedModules: moduleTitles
-      });
-      if (res.data.success) {
-        await fetchRoadmap(false);
-      }
-    } catch (err) {
-      console.error('Failed to quick complete course:', err);
-    }
-  };
 
   useEffect(() => {
     if (user) {
@@ -78,7 +64,7 @@ const LearningPath = () => {
   }, [user, navigate]);
 
   return (
-    <div className="pl-64 min-h-screen bg-slate-900 grid-bg pb-16">
+    <div className="pl-0 min-h-screen bg-slate-900 grid-bg pb-16">
       <Navbar title="My Learning Roadmap" />
 
       <div className="max-w-4xl mx-auto px-8 py-8 relative z-10">
@@ -239,27 +225,59 @@ const LearningPath = () => {
                             Locked
                             <Lock className="w-3.5 h-3.5" />
                           </button>
-                        ) : isCompleted ? (
-                          <span className="flex items-center gap-1.5 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-2 px-4 rounded-xl shrink-0">
-                            Completed
-                            <CheckCircle2 className="w-3.5 h-3.5" />
-                          </span>
                         ) : (
                           <div className="flex items-center gap-2 shrink-0">
-                            <button
-                              onClick={() => handleQuickComplete(currentCourseId, linkedCourse.modules)}
-                              className="flex items-center gap-1.5 text-xs font-bold bg-emerald-600/10 text-emerald-300 hover:bg-emerald-600/20 border border-emerald-500/20 hover:border-emerald-500/40 py-2 px-4 rounded-xl transition-all duration-200"
-                            >
-                              Quick Complete
-                            </button>
-                            <Link
-                              to="/courses"
-                              state={{ openCourseId: currentCourseId }}
-                              className="flex items-center gap-1.5 text-xs font-bold bg-brand-600/10 text-brand-300 hover:bg-brand-600/20 border border-brand-500/20 hover:border-brand-500/40 py-2 px-4 rounded-xl transition-all duration-200"
-                            >
-                              Enroll / Resume
-                              <ArrowRight className="w-3.5 h-3.5" />
-                            </Link>
+                            {/* If not enrolled or not started */}
+                            {(!currentProgress || currentProgress.completionPercentage === 0) && (
+                              <Link
+                                to="/courses"
+                                state={{ openCourseId: currentCourseId }}
+                                className="flex items-center gap-1.5 text-xs font-bold bg-brand-600 hover:bg-brand-500 text-white py-2.5 px-4 rounded-xl transition-all duration-200 shadow-md shadow-brand-600/15"
+                              >
+                                Start Learning
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            )}
+
+                            {/* If enrolled but progress is < 100% */}
+                            {currentProgress && currentProgress.completionPercentage > 0 && currentProgress.completionPercentage < 100 && (
+                              <Link
+                                to="/courses"
+                                state={{ openCourseId: currentCourseId }}
+                                className="flex items-center gap-1.5 text-xs font-bold bg-brand-600/10 text-brand-300 hover:bg-brand-600/20 border border-brand-500/20 hover:border-brand-500/40 py-2 px-4 rounded-xl transition-all duration-200"
+                              >
+                                Resume Course
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            )}
+
+                            {/* If modules are all done but quiz is not passed */}
+                            {currentProgress && currentProgress.completionPercentage >= 100 && !currentProgress.quizPassed && (
+                              <Link
+                                to="/courses"
+                                state={{ openCourseId: currentCourseId, startQuiz: true }}
+                                className="flex items-center gap-1.5 text-xs font-bold bg-amber-600 text-white hover:bg-amber-500 py-2 px-4 rounded-xl transition-all duration-200 shadow-md shadow-amber-600/15 animate-pulse"
+                              >
+                                Take Phase Quiz
+                                <ArrowRight className="w-3.5 h-3.5" />
+                              </Link>
+                            )}
+
+                            {/* If completed (quizPassed is true) */}
+                            {currentProgress && currentProgress.quizPassed && (
+                              <div className="flex items-center gap-2">
+                                <span className="flex items-center gap-1 text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 py-1.5 px-3 rounded-xl">
+                                  Passed
+                                </span>
+                                <Link
+                                  to="/courses"
+                                  state={{ openCourseId: currentCourseId }}
+                                  className="flex items-center gap-1.5 text-xs font-bold bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-300 py-2 px-4 rounded-xl transition-all duration-200"
+                                >
+                                  Review Course
+                                </Link>
+                              </div>
+                            )}
                           </div>
                         )}
                       </div>

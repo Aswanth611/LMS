@@ -45,7 +45,16 @@ const Landing = () => {
         {/* Headline */}
         <h1 className="text-4xl sm:text-6xl font-black text-white tracking-tight leading-[1.15] max-w-4xl">
           Automate Your Learning Journey with{' '}
-          <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-400 via-brand-500 to-accent-purple">
+          <span 
+            style={{ 
+              WebkitBackgroundClip: 'text', 
+              WebkitTextFillColor: 'transparent', 
+              backgroundClip: 'text',
+              color: 'transparent',
+              backgroundImage: 'linear-gradient(to right, #818cf8, #a78bfa, #f472b6)',
+              display: 'inline-block'
+            }}
+          >
             AI-Powered Personalization
           </span>
         </h1>

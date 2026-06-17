@@ -26,6 +26,14 @@ const ProgressSchema = new mongoose.Schema({
     type: [String], // store the IDs or titles of completed modules
     default: []
   },
+  quizScore: {
+    type: Number,
+    default: -1 // -1 means not taken yet
+  },
+  quizPassed: {
+    type: Boolean,
+    default: false
+  },
   lastAccessed: {
     type: Date,
     default: Date.now

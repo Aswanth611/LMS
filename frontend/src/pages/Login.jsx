@@ -4,12 +4,17 @@ import { AuthContext } from '../context/AuthContext';
 import { Mail, Lock, LogIn, AlertCircle } from 'lucide-react';
 
 const Login = () => {
-  const { login, user, error, setError } = useContext(AuthContext);
+  const { login, logout, user, error, setError } = useContext(AuthContext);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   
   const navigate = useNavigate();
+
+  // Clear session on login page load to force credentials prompt
+  useEffect(() => {
+    logout();
+  }, []);
 
   // Redirect if already logged in
   useEffect(() => {

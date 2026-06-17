@@ -12,6 +12,7 @@ export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Set auth token header globally
   const setAuthToken = (token) => {
@@ -132,7 +133,9 @@ export const AuthProvider = ({ children }) => {
         login,
         logout,
         updateProfile,
-        setError
+        setError,
+        sidebarOpen,
+        setSidebarOpen
       }}
     >
       {children}
