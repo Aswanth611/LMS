@@ -128,7 +128,15 @@ const AiVoiceMentor = () => {
     // Cancel any current speech
     synthRef.current.cancel();
 
-    const cleanText = text.replace(/[*#`_\-]/g, ''); // strip markdown formatting characters
+    // Clean markdown notation out of read text
+    const cleanText = text
+      .replace(/\*\*/g, '')
+      .replace(/\*/g, '')
+      .replace(/#/g, '')
+      .replace(/`/g, '')
+      .replace(/_/g, '')
+      .replace(/-/g, ' ');
+      
     const utterance = new SpeechSynthesisUtterance(cleanText);
     
     if (selectedVoiceName) {
@@ -286,7 +294,7 @@ const AiVoiceMentor = () => {
           </div>
         )}
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">
           
           {/* Controls Column */}
           <div className="md:col-span-1 flex flex-col gap-6">
@@ -415,11 +423,11 @@ const AiVoiceMentor = () => {
             )}
           </div>
 
-          {/* Transcripts and Response Cards */}
+          {/* Transcripts and Response Cards Column */}
           <div className="md:col-span-2 flex flex-col gap-6">
             
             {/* Transcript & Text Input Card */}
-            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col min-h-[180px]">
+            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-3 border-b border-slate-850 pb-2">
                 <h4 className="text-xs uppercase font-extrabold tracking-widest text-slate-500 flex items-center gap-2">
                   <MessageSquareQuote className="w-4 h-4 text-brand-400" />
@@ -432,13 +440,14 @@ const AiVoiceMentor = () => {
                 )}
               </div>
               
-              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[80px] max-h-[140px] overflow-y-auto scrollbar-thin">
+              {/* Box has min-h and max-h with scrolling so it never stretches abnormally */}
+              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[70px] max-h-[120px] overflow-y-auto scrollbar-thin">
                 {transcript ? (
                   <p className="text-sm text-slate-200 leading-relaxed font-medium break-words">
                     "{transcript}"
                   </p>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full min-h-[38px]">
                     <p className="text-xs text-slate-500 italic">
                       {isListening ? 'Speak now, transcript will update here in real time...' : 'Your spoken words or typed question will appear here...'}
                     </p>
@@ -454,7 +463,7 @@ const AiVoiceMentor = () => {
                   onChange={(e) => setTextInput(e.target.value)}
                   disabled={isLoading || isListening}
                   placeholder={isListening ? "Stop listening to type..." : "Or type your question here..."}
-                  className="flex-1 bg-slate-900 border border-slate-850 rounded-xl py-2.5 px-4 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                  className="flex-1 bg-slate-900 border border-slate-800 rounded-xl py-2.5 px-4 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
                 />
                 <button
                   type="submit"
@@ -468,7 +477,7 @@ const AiVoiceMentor = () => {
             </div>
 
             {/* Response Card */}
-            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col min-h-[280px]">
+            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col overflow-hidden">
               <div className="flex items-center justify-between mb-3 border-b border-slate-850 pb-2">
                 <h4 className="text-xs uppercase font-extrabold tracking-widest text-slate-500 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-accent-purple" />
@@ -486,9 +495,10 @@ const AiVoiceMentor = () => {
                 )}
               </div>
               
-              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[140px] max-h-[300px] overflow-y-auto scrollbar-thin">
+              {/* Box has overflow-y-auto so text inside can never spread outside the box */}
+              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[120px] max-h-[300px] overflow-y-auto scrollbar-thin">
                 {isLoading ? (
-                  <div className="flex flex-col items-center justify-center py-8 gap-3 h-full">
+                  <div className="flex flex-col items-center justify-center py-6 gap-3">
                     <div className="w-8 h-8 rounded-full border-2 border-brand-500/20 border-t-brand-500 animate-spin" />
                     <span className="text-xs text-slate-400 font-medium">Mentor is formulating a response...</span>
                   </div>
@@ -497,7 +507,7 @@ const AiVoiceMentor = () => {
                     {aiResponse}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full min-h-[88px]">
                     <p className="text-xs text-slate-500 italic">
                       Waiting for your input to analyze...
                     </p>
