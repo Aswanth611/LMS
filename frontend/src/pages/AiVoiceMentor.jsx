@@ -440,14 +440,14 @@ const AiVoiceMentor = () => {
                 )}
               </div>
               
-              {/* Box has min-h and max-h with scrolling so it never stretches abnormally */}
-              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[70px] max-h-[120px] overflow-y-auto scrollbar-thin">
+              {/* Force natural auto-height based on text content, limited strictly between min and max heights */}
+              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 h-auto min-h-[60px] max-h-[120px] overflow-y-auto scrollbar-thin">
                 {transcript ? (
                   <p className="text-sm text-slate-200 leading-relaxed font-medium break-words">
                     "{transcript}"
                   </p>
                 ) : (
-                  <div className="flex items-center justify-center h-full min-h-[38px]">
+                  <div className="flex items-center justify-center min-h-[28px]">
                     <p className="text-xs text-slate-500 italic">
                       {isListening ? 'Speak now, transcript will update here in real time...' : 'Your spoken words or typed question will appear here...'}
                     </p>
@@ -495,8 +495,8 @@ const AiVoiceMentor = () => {
                 )}
               </div>
               
-              {/* Box has overflow-y-auto so text inside can never spread outside the box */}
-              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[120px] max-h-[300px] overflow-y-auto scrollbar-thin">
+              {/* Force natural auto-height based on text content, limited strictly between min and max heights with scrolling */}
+              <div className="bg-slate-950/30 border border-slate-850 rounded-xl p-4 h-auto min-h-[100px] max-h-[280px] overflow-y-auto scrollbar-thin">
                 {isLoading ? (
                   <div className="flex flex-col items-center justify-center py-6 gap-3">
                     <div className="w-8 h-8 rounded-full border-2 border-brand-500/20 border-t-brand-500 animate-spin" />
@@ -507,7 +507,7 @@ const AiVoiceMentor = () => {
                     {aiResponse}
                   </div>
                 ) : (
-                  <div className="flex items-center justify-center h-full min-h-[88px]">
+                  <div className="flex items-center justify-center min-h-[68px]">
                     <p className="text-xs text-slate-500 italic">
                       Waiting for your input to analyze...
                     </p>
