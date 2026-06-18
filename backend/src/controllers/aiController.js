@@ -363,3 +363,60 @@ function generateFallbackAnalysis(user, progressData) {
     nextSteps
   };
 }
+
+// @desc    Voice Mentor speech completion
+// @route   POST /api/ai/voice-mentor
+// @access  Private
+const sendToGroq = async (text) => {
+  const apiKey = process.env.GROQ_API_KEY;
+  if (!apiKey) {
+    throw new Error('Groq API Key is not configured on the server. Please add GROQ_API_KEY to backend/.env file.');
+  }
+
+  const response = await axios.post(
+    'https://api.groq.com/openai/v1/chat/completions',
+    {
+      model: 'llama-3.3-70b-versatile',
+      messages: [
+        {
+          role: 'system',
+          content: 'You are EduFlick AI Mentor. Help students learn AI, Prompt Engineering, Content Creation, Software Development and Agentic Automation. Give beginner-friendly answers.'
+        },
+        {
+          role: 'user',
+          content: text
+        }
+      ]
+    },
+    {
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json'
+      }
+    }
+  );
+
+  if (response.data && response.data.choices && response.data.choices[0] && response.data.choices[0].message) {
+    return response.data.choices[0].message.content;
+  } else {
+    throw new Error('Unexpected response format from Groq API');
+  }
+};
+
+exports.voiceMentor = async (req, res) => {
+  try {
+    const { text } = req.body;
+    if (!text) {
+      return res.status(400).json({ success: false, message: 'Text is required' });
+    }
+    const reply = await sendToGroq(text);
+    res.json({ success: true, reply });
+  } catch (error) {
+    console.error('Groq integration error:', error.message);
+    res.status(500).json({
+      success: false,
+      message: error.response?.data?.error?.message || error.message || 'Failed to call Groq API'
+    });
+  }
+};
+

@@ -14,8 +14,10 @@ import MentorReviews from './pages/MentorReviews';
 import MentorApproved from './pages/MentorApproved';
 import AdminDashboard from './pages/AdminDashboard';
 import Tracks from './pages/Tracks';
+import AiVoiceMentor from './pages/AiVoiceMentor';
 import Sidebar from './components/Sidebar';
 import Chatbot from './components/Chatbot';
+
 
 // Private Route Wrapper
 const PrivateRoute = ({ children }) => {
@@ -73,6 +75,8 @@ function App() {
           <Route path="/catalog" element={<PrivateRoute><Courses /></PrivateRoute>} />
           <Route path="/project-submission" element={<PrivateRoute><ProjectSubmission /></PrivateRoute>} />
           <Route path="/about" element={<PrivateRoute><AboutProject /></PrivateRoute>} />
+          <Route path="/voice-mentor" element={<PrivateRoute><AiVoiceMentor /></PrivateRoute>} />
+
 
           {/* Protected Mentor Routes */}
           <Route path="/mentor-dashboard" element={<PrivateRoute><MentorDashboard /></PrivateRoute>} />

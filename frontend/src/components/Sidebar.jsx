@@ -9,7 +9,8 @@ import {
   Settings, 
   LogOut, 
   Compass, 
-  ShieldAlert 
+  ShieldAlert,
+  Mic
 } from 'lucide-react';
 
 const Sidebar = () => {
@@ -31,10 +32,12 @@ const Sidebar = () => {
     links = [
       { name: 'Learning Progress', path: '/learning-path', icon: Map },
       { name: 'Course Catalog', path: '/catalog', icon: BookOpen },
+      { name: 'AI Voice Mentor', path: '/voice-mentor', icon: Mic },
       { name: 'Project Submission', path: '/project-submission', icon: Compass },
       { name: 'About Project', path: '/about', icon: BarChart3 }
     ];
   }
+
 
   return (
     <>

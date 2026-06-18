@@ -4,7 +4,8 @@ const {
   generateLearningPath,
   recommendCourses,
   analyzeProgress,
-  askAssistant
+  askAssistant,
+  voiceMentor
 } = require('../controllers/aiController');
 const { protect } = require('../middleware/auth');
 
@@ -14,5 +15,7 @@ router.post('/generate-learning-path', generateLearningPath);
 router.post('/recommend-course', recommendCourses);
 router.post('/analyze-progress', analyzeProgress);
 router.post('/chat', askAssistant);
+router.post('/voice-mentor', voiceMentor);
+
 
 module.exports = router;
