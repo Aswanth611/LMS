@@ -14,7 +14,8 @@ import {
   Cpu, 
   Zap, 
   MessageSquareQuote,
-  AlertCircle
+  AlertCircle,
+  Send
 } from 'lucide-react';
 
 const AiVoiceMentor = () => {
@@ -24,6 +25,7 @@ const AiVoiceMentor = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [transcript, setTranscript] = useState('');
   const [aiResponse, setAiResponse] = useState('');
+  const [textInput, setTextInput] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [voices, setVoices] = useState([]);
   const [selectedVoiceName, setSelectedVoiceName] = useState('');
@@ -178,7 +180,7 @@ const AiVoiceMentor = () => {
   useEffect(() => {
     const processUserSpeech = async () => {
       // Trigger only when user stops speaking, and there is actual text captured
-      if (!isListening && transcript.trim().length > 0 && !aiResponse && !isLoading) {
+      if (!isListening && transcript.trim().length > 0 && !aiResponse && !isLoading && !textInput) {
         setIsLoading(true);
         setErrorMessage('');
         try {
@@ -200,6 +202,42 @@ const AiVoiceMentor = () => {
     processUserSpeech();
   }, [isListening]);
 
+  // Handles typed text submission
+  const handleTextSubmit = async (e) => {
+    e.preventDefault();
+    if (!textInput.trim() || isLoading) return;
+
+    const query = textInput.trim();
+    setTextInput('');
+    setTranscript(query);
+    setAiResponse('');
+    setErrorMessage('');
+    setIsLoading(true);
+    
+    // Stop listening if active
+    if (isListening) {
+      handleStopListening();
+    }
+
+    // Cancel any current readout
+    handleStopSpeaking();
+
+    try {
+      const answer = await sendToGroq(query);
+      setAiResponse(answer);
+      speakResponse(answer);
+    } catch (err) {
+      console.error(err);
+      setErrorMessage(
+        err.response?.data?.message || 
+        err.message || 
+        'Could not fetch mentor response. Make sure the backend is running and GROQ_API_KEY is set.'
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const handleStopSpeaking = () => {
     if (synthRef.current) {
       synthRef.current.cancel();
@@ -212,6 +250,7 @@ const AiVoiceMentor = () => {
     handleStopSpeaking();
     setTranscript('');
     setAiResponse('');
+    setTextInput('');
     setErrorMessage('');
     setIsLoading(false);
   };
@@ -318,7 +357,7 @@ const AiVoiceMentor = () => {
                   <button
                     onClick={handleStartListening}
                     disabled={isLoading}
-                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 transition-all duration-200 cursor-pointer shadow-lg shadow-brand-500/10 active:scale-95 animate-none"
+                    className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl text-xs font-bold text-white bg-gradient-to-r from-brand-600 to-brand-500 hover:from-brand-500 hover:to-brand-400 disabled:opacity-50 transition-all duration-200 cursor-pointer shadow-lg shadow-brand-500/10 active:scale-95"
                   >
                     <Mic className="w-4 h-4" />
                     Start Talking
@@ -379,38 +418,61 @@ const AiVoiceMentor = () => {
           {/* Transcripts and Response Cards */}
           <div className="md:col-span-2 flex flex-col gap-6">
             
-            {/* Transcript Card */}
-            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex-1 min-h-[140px] flex flex-col">
+            {/* Transcript & Text Input Card */}
+            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col min-h-[180px]">
               <div className="flex items-center justify-between mb-3 border-b border-slate-850 pb-2">
                 <h4 className="text-xs uppercase font-extrabold tracking-widest text-slate-500 flex items-center gap-2">
                   <MessageSquareQuote className="w-4 h-4 text-brand-400" />
-                  Your Speech Transcript
+                  Your Speech & Text Input
                 </h4>
                 {isListening && (
                   <span className="text-[10px] text-red-400 font-bold uppercase tracking-wider animate-pulse">
-                    Live
+                    Live Recording
                   </span>
                 )}
               </div>
-              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[80px]">
+              
+              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[80px] max-h-[140px] overflow-y-auto scrollbar-thin">
                 {transcript ? (
-                  <p className="text-sm text-slate-200 leading-relaxed font-medium">
+                  <p className="text-sm text-slate-200 leading-relaxed font-medium break-words">
                     "{transcript}"
                   </p>
                 ) : (
-                  <p className="text-xs text-slate-500 italic">
-                    {isListening ? 'Speak now, transcript will update here in real time...' : 'Your spoken words will appear here...'}
-                  </p>
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-xs text-slate-500 italic">
+                      {isListening ? 'Speak now, transcript will update here in real time...' : 'Your spoken words or typed question will appear here...'}
+                    </p>
+                  </div>
                 )}
               </div>
+
+              {/* Text Input Form */}
+              <form onSubmit={handleTextSubmit} className="mt-4 flex gap-2">
+                <input
+                  type="text"
+                  value={textInput}
+                  onChange={(e) => setTextInput(e.target.value)}
+                  disabled={isLoading || isListening}
+                  placeholder={isListening ? "Stop listening to type..." : "Or type your question here..."}
+                  className="flex-1 bg-slate-900 border border-slate-850 rounded-xl py-2.5 px-4 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-brand-500 focus:ring-1 focus:ring-brand-500 disabled:opacity-50"
+                />
+                <button
+                  type="submit"
+                  disabled={isLoading || isListening || !textInput.trim()}
+                  className="bg-brand-600 hover:bg-brand-500 disabled:opacity-40 text-white rounded-xl px-4 py-2.5 text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer shadow-md shadow-brand-500/10 active:scale-95 shrink-0"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                  Send
+                </button>
+              </form>
             </div>
 
             {/* Response Card */}
-            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex-1 min-h-[220px] flex flex-col">
+            <div className="glass-card p-6 rounded-2xl border border-slate-800/80 flex flex-col min-h-[280px]">
               <div className="flex items-center justify-between mb-3 border-b border-slate-850 pb-2">
                 <h4 className="text-xs uppercase font-extrabold tracking-widest text-slate-500 flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-accent-purple" />
-                  AI Response
+                  AI Mentor Response
                 </h4>
                 {aiResponse && (
                   <button
@@ -424,20 +486,22 @@ const AiVoiceMentor = () => {
                 )}
               </div>
               
-              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[120px] flex flex-col justify-between">
+              <div className="flex-1 bg-slate-950/30 border border-slate-850 rounded-xl p-4 min-h-[140px] max-h-[300px] overflow-y-auto scrollbar-thin">
                 {isLoading ? (
-                  <div className="flex flex-col items-center justify-center py-8 gap-3">
+                  <div className="flex flex-col items-center justify-center py-8 gap-3 h-full">
                     <div className="w-8 h-8 rounded-full border-2 border-brand-500/20 border-t-brand-500 animate-spin" />
                     <span className="text-xs text-slate-400 font-medium">Mentor is formulating a response...</span>
                   </div>
                 ) : aiResponse ? (
-                  <div className="text-sm text-slate-300 space-y-3 leading-relaxed whitespace-pre-wrap font-sans">
+                  <div className="text-sm text-slate-300 space-y-3 leading-relaxed whitespace-pre-wrap font-sans break-words">
                     {aiResponse}
                   </div>
                 ) : (
-                  <p className="text-xs text-slate-500 italic self-center my-auto">
-                    Waiting for your speech to submit...
-                  </p>
+                  <div className="flex items-center justify-center h-full">
+                    <p className="text-xs text-slate-500 italic">
+                      Waiting for your input to analyze...
+                    </p>
+                  </div>
                 )}
               </div>
             </div>
